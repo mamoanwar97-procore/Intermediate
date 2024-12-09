@@ -1,0 +1,39 @@
+name: Collect Files from Repos
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  collect-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: |
+          npm install xml2js
+
+      - name: Execute file collection script
+        run: |
+          node collectFiles.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and Push collected files
+        run: |
+          git checkout -b collected-files
+          git add .
+          git commit -m "Add collected files from other repositories"
+          git push origin collected-files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

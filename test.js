@@ -32,11 +32,11 @@ xml2js.parseString(xmlData, (err, result) => {
     console.log("repo", repo, revision, branch);
 
     // create new branch to collect all translations updates from all repos
-    execSync(`git pull origin ${branch}`);
+    // execSync(`git pull origin ${branch}`);
   });
 
-  execSync(`git push origin ${defaultCollectionBranch}`);
-  execSync(
-    'gh pr create --base main --head translations-collection --title "Translations Update" --body "Translations Update"'
-  );
+  //   execSync(`git push origin ${defaultCollectionBranch}`);
+  //   execSync(
+  //     'gh pr create --base main --head translations-collection --title "Translations Update" --body "Translations Update"'
+  //   );
 });

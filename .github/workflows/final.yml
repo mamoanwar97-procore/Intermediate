@@ -1,0 +1,38 @@
+name: Merge PRs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-python-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create collection branch if not exists
+        run: |
+          if git show-ref --verify --quiet refs/heads/translations-collection; then
+            git checkout translations-collection
+          else
+            git checkout -b translations-collection
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install xml2js
+
+      - name: Run JavaScript script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_ORIGIN: ${{ github.repository }}
+          GIT_ORIGIN_URL: ${{ github.server_url }}/${{ github.repository }}
+          GIT_HEAD_REF: ${{ github.head_ref }}
+        run: node test.js

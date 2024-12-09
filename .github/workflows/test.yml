@@ -35,4 +35,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_ORIGIN: ${{ github.repository }}
+          GIT_ORIGIN_URL: ${{ github.server_url }}/${{ github.repository }}
         run: python python.py

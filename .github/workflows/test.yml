@@ -36,4 +36,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_ORIGIN: ${{ github.repository }}
           GIT_ORIGIN_URL: ${{ github.server_url }}/${{ github.repository }}
+          GIT_HEAD_REF: ${{ github.head_ref }}
         run: python python.py

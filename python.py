@@ -6,8 +6,10 @@ default_collection_branch = 'translations-collection'
 
 git_token = os.environ['GITHUB_TOKEN']
 git_url = os.environ['GIT_ORIGIN_URL']
+git_ref = os.environ['GIT_HEAD_REF']
 print(git_token)
 print(git_url)
+print(git_ref)
 
 # Parse the XML file
 with open(f'{parent_dir}/reference.xml') as fd:

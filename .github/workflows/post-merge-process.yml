@@ -65,23 +65,36 @@ jobs:
             exit 1
           fi
 
+          # Read and send each record
           jq -c '.[]' source.json | while read -r SOURCE; do
             SOURCE_PR_NAME=$(echo "$SOURCE" | jq -r '.pr_name')
             SOURCE_PR_NUMBER=$(echo "$SOURCE" | jq -r '.pr_number')
             SOURCE_REPO_NAME=$(echo "$SOURCE" | jq -r '.repo_name')
+
+            PAYLOAD=$(jq -n \
+              --arg pr_name "$PR_NAME" \
+              --arg pr_number "$PR_NUMBER" \
+              --arg source_pr_name "$SOURCE_PR_NAME" \
+              --arg source_pr_number "$SOURCE_PR_NUMBER" \
+              --arg source_repo_name "$SOURCE_REPO_NAME" \
+              '{
+                pr_name: $pr_name,
+                pr_number: ($pr_number | tonumber),
+                source_pr_name: $source_pr_name,
+                source_pr_number: ($source_pr_number | tonumber),
+                source_repo_name: $source_repo_name
+              }')
+
+            echo "Sending payload: $PAYLOAD"
 
             RESPONSE=$(curl -s -X POST \
               "$SUPABASE_URL/rest/v1/translation_processes" \
               -H "Content-Type: application/json" \
               -H "apiKey: $SUPABASE_SERVICE_KEY" \
               -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-              -d "{
-                \"pr_name\": \"$PR_NAME\", 
-                \"pr_number\": \"$PR_NUMBER\", 
-                \"source_pr_name\": \"$SOURCE_PR_NAME\", 
-                \"source_pr_number\": $SOURCE_PR_NUMBER, 
-                \"source_repo_name\": \"$SOURCE_REPO_NAME\"
-              }")
+              -d "$PAYLOAD")
+
+            echo "API response: $RESPONSE"
 
             if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
               echo "::error::Failed to insert record: $RESPONSE"

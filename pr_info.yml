@@ -1,13 +1,13 @@
 aggregator:
-  pr_name: "current pr_name"
+  pr_name: "rowan"
   pr_number: 1234
 sources:
-  - repo_name: "source MFE1"
-    pr_name: "[GLB-eeee]"
+  - repo_name: "MFE1"
+    pr_name: "test"
     pr_number: 22
-  - repo_name: "source MFE2"
-    pr_name: "[Biddingge43]fefefe"
+  - repo_name: "MFE2"
+    pr_name: "mfe2"
     pr_number: 11
-  - repo_name: "source dddd"
-    pr_name: "efefeffe"
+  - repo_name: "rowan test"
+    pr_name: "yekhtaai"
     pr_number: 1

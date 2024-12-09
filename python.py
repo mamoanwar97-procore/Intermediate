@@ -15,7 +15,7 @@ with open(f'{parent_dir}/reference.xml') as fd:
 
 subprocess.run(['git', 'remote', 'add', 'origin', git_url])
 subprocess.run(['git', 'checkout', "origin", default_collection_branch])
-subprocess.run(['git', 'config', 'pull.rebase', 'true'])
+subprocess.run(['git', 'config', 'pull.rebase', 'false'])
 # Loop over the project elements in the XML file
 for project in doc['manifest']['project']:
     repo = project['@name']

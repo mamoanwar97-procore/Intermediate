@@ -1,0 +1,30 @@
+name: Python Script Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-python-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create collection branch if not exists
+        run: |
+          if git show-ref --verify --quiet refs/heads/translations-collection; then
+            git checkout translations-collection
+          else
+            git checkout -b translations-collection
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Run Python script
+        run: python python.py

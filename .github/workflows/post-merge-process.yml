@@ -14,103 +14,97 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Read and parse `pr_info` data
+      # Step 2: Install `yq` and `jq`
+      - name: Install yq and jq
+        run: |
+          sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/bin/yq
+          yq --version
+          sudo apt-get update
+          sudo apt-get install -y jq
+          jq --version
+
+      # Step 3: Read and parse `pr_info.yml` data
       - name: Parse PR info
         id: parse_pr_info
         run: |
-          if [ ! -f pr_info.txt ]; then
-            echo "::error::pr_info.txt not found. Exiting."
+          if [ ! -f pr_info.yml ]; then
+            echo "::error::pr_info.yml not found. Exiting."
             exit 1
           fi
 
-          # Read aggregator PR details (first line)
-          AGGREGATOR_LINE=$(head -n 1 pr_info.txt)
-          if [ -z "$AGGREGATOR_LINE" ]; then
-            echo "::error::Aggregator line is missing in pr_info.txt. Exiting."
-            exit 1
-          fi
-          IFS=',' read -r PR_NAME PR_NUMBER <<< "$AGGREGATOR_LINE"
+          # Extract aggregator PR details
+          PR_NAME=$(yq eval '.aggregator.pr_name' pr_info.yml)
+          PR_NUMBER=$(yq eval '.aggregator.pr_number' pr_info.yml)
 
-          # Read and parse source PR details (remaining lines)
-          SOURCE_LINES=$(tail -n +2 pr_info.txt)
-          if [ -z "$SOURCE_LINES" ]; then
-            echo "::warning::No source PRs found in pr_info.txt."
-            echo "[]" > source.json
-          else
-            echo "$SOURCE_LINES" | awk -F'|' '
-              BEGIN { print "[" }
-              {
-                for (i = 1; i <= NF; i++) {
-                  split($i, fields, ",");
-                  printf "%s{\"repo_name\": \"%s\", \"pr_name\": \"%s\", \"pr_number\": \"%s\"}",
-                  (i > 1 ? "," : ""),
-                  fields[1], fields[2], fields[3];
-                }
-              }
-              END { print "]" }
-            ' > source.json
-          fi
+          # Extract sources into JSON
+          # Convert sources to JSON array
+          yq eval -o=json '.sources' pr_info.yml > sources.json
+          # Debug: Print the contents of sources.json
+          cat sources.json
 
           echo "PR_NAME=$PR_NAME" >> $GITHUB_ENV
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
 
-      # Step 3: Insert into `translation_processes`
-      - name: Insert into translation_processes
+      # Step 4: Insert into `translation_processes`
+      - name: Insert into translation_processes (Bulk Insert)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
-          if [ ! -s source.json ]; then
-            echo "::error::source.json is empty or missing."
+          if [ ! -s sources.json ]; then
+            echo "::error::sources.json is empty or missing."
             exit 1
           fi
 
-          # Read and send each record
-          jq -c '.[]' source.json | while read -r SOURCE; do
-            SOURCE_PR_NAME=$(echo "$SOURCE" | jq -r '.pr_name')
-            SOURCE_PR_NUMBER=$(echo "$SOURCE" | jq -r '.pr_number')
-            SOURCE_REPO_NAME=$(echo "$SOURCE" | jq -r '.repo_name')
+          # Debug: Validate sources.json as JSON before processing
+          jq . sources.json > /dev/null
+          if [ $? -ne 0 ]; then
+            echo "::error::sources.json is not valid JSON."
+            exit 1
+          fi
 
-            PAYLOAD=$(jq -n \
-              --arg pr_name "$PR_NAME" \
-              --arg pr_number "$PR_NUMBER" \
-              --arg source_pr_name "$SOURCE_PR_NAME" \
-              --arg source_pr_number "$SOURCE_PR_NUMBER" \
-              --arg source_repo_name "$SOURCE_REPO_NAME" \
-              '{
-                pr_name: $pr_name,
-                pr_number: ($pr_number | tonumber),
-                source_pr_name: $source_pr_name,
-                source_pr_number: ($source_pr_number | tonumber),
-                source_repo_name: $source_repo_name
-              }')
+          # Debug: Print the contents of sources.json again
+          echo "Contents of sources.json:"
+          cat sources.json
 
-            echo "Sending payload: $PAYLOAD"
+          # Prepare bulk data as a JSON array
+          BULK_DATA=$(jq -c --arg pr_name "$PR_NAME" --arg pr_number "$PR_NUMBER" '
+            [ .[] | { 
+                pr_name: $pr_name, 
+                pr_number: ($pr_number | tonumber), 
+                source_repo_name: .repo_name, 
+                source_pr_name: .pr_name, 
+                source_pr_number: .pr_number 
+            } ]' < sources.json)
 
-            RESPONSE=$(curl -s -X POST \
-              "$SUPABASE_URL/rest/v1/translation_processes" \
-              -H "Content-Type: application/json" \
-              -H "apiKey: $SUPABASE_SERVICE_KEY" \
-              -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-              -d "$PAYLOAD")
+          echo "Sending bulk data: $BULK_DATA"
 
-            echo "API response: $RESPONSE"
+          # Send bulk data to Supabase
+          RESPONSE=$(curl -s -X POST \
+            "$SUPABASE_URL/rest/v1/translation_processes" \
+            -H "Content-Type: application/json" \
+            -H "apiKey: $SUPABASE_SERVICE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            --data '$BULK_DATA')
 
-            if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
-              echo "::error::Failed to insert record: $RESPONSE"
-              exit 1
-            else
-              echo "::notice::Record inserted successfully for $SOURCE_PR_NAME."
-            fi
-          done
+          echo "API response: $RESPONSE"
 
-      # Step 4: Reset the `pr_info.txt` file
-      - name: Reset pr_info file
-        run: |
-          > pr_info.txt
-          if [ ! -s pr_info.txt ]; then
-              echo "::notice::pr_info.txt successfully reset."
+          # Check for errors in the response
+          if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
+            echo "::error::Failed to insert bulk data: $RESPONSE"
+            exit 1
           else
-              echo "::error::Failed to reset pr_info.txt."
+            echo "::notice::Bulk data inserted successfully."
+          fi
+
+      # Step 5: Reset the `pr_info.yml` file
+      - name: Reset pr_info.yml
+        run: |
+          > pr_info.yml
+          if [ ! -s pr_info.yml ]; then
+              echo "::notice::pr_info.yml successfully reset."
+          else
+              echo "::error::Failed to reset pr_info.yml."
               exit 1
           fi

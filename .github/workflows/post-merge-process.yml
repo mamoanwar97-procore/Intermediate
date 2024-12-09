@@ -19,71 +19,85 @@ jobs:
         id: parse_pr_info
         run: |
           if [ ! -f pr_info.txt ]; then
-            echo "pr_info.txt not found. Exiting."
+            echo "::error::pr_info.txt not found. Exiting."
             exit 1
           fi
 
-          # Read the first line (Aggregator details)
+          # Read aggregator PR details (first line)
           AGGREGATOR_LINE=$(head -n 1 pr_info.txt)
+          if [ -z "$AGGREGATOR_LINE" ]; then
+            echo "::error::Aggregator line is missing in pr_info.txt. Exiting."
+            exit 1
+          fi
           IFS=',' read -r PR_NAME PR_NUMBER <<< "$AGGREGATOR_LINE"
 
-          # Read the second line (Source details)
+          # Read and parse source PR details (remaining lines)
           SOURCE_LINES=$(tail -n +2 pr_info.txt)
-
-          # Parse sources into JSON
-          SOURCE_JSON=$(echo "$SOURCE_LINES" | awk -F'|' '
-            BEGIN { print "[" }
-            {
-              for (i = 1; i <= NF; i++) {
-                split($i, fields, ",");
-                printf "%s{\"repo_name\": \"%s\", \"pr_name\": \"%s\", \"pr_number\": \"%s\"}",
-                (i > 1 ? "," : ""),
-                fields[1], fields[2], fields[3];
+          if [ -z "$SOURCE_LINES" ]; then
+            echo "::warning::No source PRs found in pr_info.txt."
+            echo "[]" > source.json
+          else
+            echo "$SOURCE_LINES" | awk -F'|' '
+              BEGIN { print "[" }
+              {
+                for (i = 1; i <= NF; i++) {
+                  split($i, fields, ",");
+                  printf "%s{\"repo_name\": \"%s\", \"pr_name\": \"%s\", \"pr_number\": \"%s\"}",
+                  (i > 1 ? "," : ""),
+                  fields[1], fields[2], fields[3];
+                }
               }
-            }
-            END { print "]" }
-          ')
+              END { print "]" }
+            ' > source.json
+          fi
+
+          echo "PR_NAME=$PR_NAME" >> $GITHUB_ENV
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
 
       # Step 3: Insert into `translation_processes`
       - name: Insert into translation_processes
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          PR_NAME: ${{ env.AGGREGATOR_PR_NAME }}
-          PR_NUMBER: ${{ env.AGGREGATOR_PR_NUMBER }}
-          SOURCE_JSON: ${{ env.SOURCE_JSON }}
         run: |
-          echo "$SOURCE_JSON" | jq -c '.[]' | while read -r SOURCE; do
+          if [ ! -s source.json ]; then
+            echo "::error::source.json is empty or missing."
+            exit 1
+          fi
+
+          jq -c '.[]' source.json | while read -r SOURCE; do
             SOURCE_PR_NAME=$(echo "$SOURCE" | jq -r '.pr_name')
             SOURCE_PR_NUMBER=$(echo "$SOURCE" | jq -r '.pr_number')
             SOURCE_REPO_NAME=$(echo "$SOURCE" | jq -r '.repo_name')
 
-            RESPONSE=$(curl -X POST \
-              --location "$SUPABASE_URL/rest/v1/translation_processes" \
-              --header "Content-Type: application/json" \
-              --header "apiKey: $SUPABASE_SERVICE_KEY" \
-              --header "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-              --data "{
+            RESPONSE=$(curl -s -X POST \
+              "$SUPABASE_URL/rest/v1/translation_processes" \
+              -H "Content-Type: application/json" \
+              -H "apiKey: $SUPABASE_SERVICE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+              -d "{
                 \"pr_name\": \"$PR_NAME\", 
-                \"pr_number\": $PR_NUMBER, 
+                \"pr_number\": \"$PR_NUMBER\", 
                 \"source_pr_name\": \"$SOURCE_PR_NAME\", 
                 \"source_pr_number\": $SOURCE_PR_NUMBER, 
                 \"source_repo_name\": \"$SOURCE_REPO_NAME\"
               }")
 
             if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
-              echo "Error inserting record: $RESPONSE"
+              echo "::error::Failed to insert record: $RESPONSE"
               exit 1
+            else
+              echo "::notice::Record inserted successfully for $SOURCE_PR_NAME."
             fi
           done
 
       # Step 4: Reset the `pr_info.txt` file
       - name: Reset pr_info file
         run: |
-          echo -n "" > pr_info.txt
+          > pr_info.txt
           if [ ! -s pr_info.txt ]; then
-              echo "pr_info.txt successfully reset."
+              echo "::notice::pr_info.txt successfully reset."
           else
-              echo "Failed to reset pr_info.txt."
+              echo "::error::Failed to reset pr_info.txt."
               exit 1
           fi

@@ -29,13 +29,14 @@ xml2js.parseString(xmlData, (err, result) => {
 
     try {
       // Clone the repo with the specified branch
+      const repoDir = `${parentDir}/${repoName}`;
+
       execSync(
-        `git clone --branch ${branch} https://github.com/${repoName}.git`,
+        `git clone --branch ${branch} https://github.com/${repoDir}.git`,
         { stdio: "inherit" }
       );
 
       // Navigate into the cloned repo
-      const repoDir = `${parentDir}/${repoName}`;
       const fileToCopy = `${repoDir}/${filePath}`;
       const destDir = `${parentDir}/collected-files`; // Destination folder to store files
 

@@ -13,7 +13,7 @@ print(git_url)
 with open(f'{parent_dir}/reference.xml') as fd:
     doc = xmltodict.parse(fd.read())
 
-os.system(f'git remote add origin {git_url}')
+os.system(f'git remote set-url origin {git_url}')
 os.system(f'git checkout origin {default_collection_branch}')
 os.system('git config pull.rebase false')
 

@@ -1,0 +1,13 @@
+aggregator:
+  pr_name: "rowan"
+  pr_number: 1234
+sources:
+  - repo_name: "MFE1"
+    pr_name: "test"
+    pr_number: 22
+  - repo_name: "MFE2"
+    pr_name: "mfe2"
+    pr_number: 11
+  - repo_name: "rowan test"
+    pr_name: "yekhtaai"
+    pr_number: 1

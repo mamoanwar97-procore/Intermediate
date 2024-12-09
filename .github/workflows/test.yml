@@ -32,4 +32,7 @@ jobs:
         run: pip install xmltodict
 
       - name: Run Python script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_ORIGIN: ${{ github.repository }}
         run: python python.py

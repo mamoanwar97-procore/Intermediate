@@ -5,7 +5,9 @@ import subprocess
 parent_dir = os.getcwd()
 default_collection_branch = 'translations-collection'
 
+git_token = os.environ['GITHUB_TOKEN']
 git_origin = os.environ['GIT_ORIGIN']
+print(git_token)
 print(git_origin)
 # Parse the XML file
 with open(f'{parent_dir}/reference.xml') as fd:

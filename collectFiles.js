@@ -29,16 +29,16 @@ parseString(xmlData, (err, result) => {
 
     try {
       // Clone the repo with the specified branch
-      execSync(
-        `git clone --branch ${branch} https://github.com/mamoanwar97-procore/${repoName}.git`,
-        { stdio: "inherit" }
-      );
+      // execSync(
+      //   `git clone --branch ${branch} https://github.com/mamoanwar97-procore/${repoName}.git`,
+      //   { stdio: "inherit" }
+      // );
       const repoDir = `${parentDir}/${repoName}`;
 
       // Navigate into the cloned repo
       const fileToCopy = `${repoDir}/${filePath}`;
       const destDir = `${parentDir}/${fileToCopy}`; // Destination folder to store files
-      console.log("fileToCopy", destDir);
+      console.log("destDir", destDir);
 
       // Ensure the destination directory exists
       // if (!fs.existsSync(destDir)) {

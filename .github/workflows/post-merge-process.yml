@@ -72,9 +72,11 @@ jobs:
           COMMIT_HASH=$(git rev-parse HEAD)
           echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
 
-          # Prepare bulk data as a JSON array
-          BULK_DATA=$(jq -c --arg pr_name "$PR_NAME" --arg pr_number "$PR_NUMBER" --arg commit_hash "$COMMIT_HASH" '
-            [ .[] | { 
+          # Prepare bulk data as a JSON array with proper escaping
+          BULK_DATA=$(jq -c --arg pr_name "$PR_NAME" \
+            --arg pr_number "$PR_NUMBER" \
+            --arg commit_hash "$COMMIT_HASH" \
+            '[.[] | { 
                 pr_name: $pr_name, 
                 pr_number: ($pr_number | tonumber), 
                 source_repo_name: .repo_name, 
@@ -83,24 +85,26 @@ jobs:
                 commit_hash: $commit_hash
             } ]' < sources.json)
 
-          echo "Sending bulk data: $BULK_DATA"
+          # Validate the constructed BULK_DATA
+          echo "Validating BULK_DATA JSON:"
+          echo "$BULK_DATA" | jq .
 
           # Send bulk data to Supabase
-          RESPONSE=$(curl -s -X POST \
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
             "$SUPABASE_URL/rest/v1/translation_processes" \
             -H "Content-Type: application/json" \
             -H "apiKey: $SUPABASE_SERVICE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-            --data '$BULK_DATA')
+            --data "$BULK_DATA")
 
-          echo "API response: $RESPONSE"
+          echo "API response code: $RESPONSE"
 
-          # Check for errors in the response
-          if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
-            echo "::error::Failed to insert bulk data: $RESPONSE"
-            exit 1
-          else
+          # Handle the response code
+          if [ "$RESPONSE" -eq 201 ]; then
             echo "::notice::Bulk data inserted successfully."
+          else
+            echo "::error::Failed to insert bulk data. HTTP status: $RESPONSE"
+            exit 1
           fi
 
       # Step 5: Reset the `pr_info.yml` file

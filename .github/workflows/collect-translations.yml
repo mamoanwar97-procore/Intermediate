@@ -1,9 +1,6 @@
 name: Gather Translations
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:

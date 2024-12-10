@@ -3,6 +3,7 @@ import sys
 import requests
 import logging
 from github import Github
+import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -97,6 +98,17 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     return targetRepoNames
 
 
+def extract_json_from_patch(patch):
+    # Remove lines that start with diff markers like '@@' and '-'
+    json_lines = []
+    for line in patch.splitlines():
+        if line.startswith('+') and not line.startswith('+++'):  # Only get added lines, ignore the diff header lines
+            json_lines.append(line[1:])  # Remove the '+' from the start of each added line
+
+    # Combine all added lines into a single string and return it as JSON content
+    json_content = ''.join(json_lines)
+    return json_content
+
 # Function to create a PR in the target repo
 def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
     try:
@@ -114,11 +126,12 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         # Add files to the new branch
         for pr_file in pr_files:
             pr_file['filename'] = pr_file['filename'].replace("/translations/", "/")
-            logging.info('yalahwy',pr_file['patch'])
+            json_content = extract_json_from_patch(pr_file['patch'])
+
             target_repo.create_file(
                 pr_file['filename'],
                 f"Add changes from PR {pr_number}",
-                pr_file['patch'],  # The file patch (content)
+                json_content,  # The file patch (content)
                 branch=new_branch_name
             )
 

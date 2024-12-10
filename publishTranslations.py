@@ -58,7 +58,10 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
     return folders
 
 def main():
+    logging.info(f"PR_NUMBER: {pr_number}")
     folders = get_folders_in_pr(pr_number, repo_name, repo_owner, github_token)
     logging.info(folders)
     return folders
 
+if __name__ == "__main__":
+    main()

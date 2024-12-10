@@ -34,3 +34,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
           BRANCH: translations-collection-${{ github.run_number }}
         run: python python.py
+
+      - name: Open PR
+        uses: rematocorp/open-pull-request-action@v1
+        with:
+          github-token: ${{ secrets.INTERMEDIATE_TOKEN }}
+          from-branch: translations-collection-${{ github.run_number }}
+          to-branch: main
+          repository-owner: mamoanwar97-procore
+          repository: Intermediate

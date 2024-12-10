@@ -37,27 +37,27 @@ parseString(xmlData, (err, result) => {
 
       // Navigate into the cloned repo
       const fileToCopy = `${repoDir}/${filePath}`;
-      console.log("fileToCopy", fileToCopy);
       const destDir = `${parentDir}/${fileToCopy}`; // Destination folder to store files
+      console.log("fileToCopy", destDir);
 
       // Ensure the destination directory exists
-      if (!fs.existsSync(destDir)) {
-        fs.mkdirSync(destDir);
-      }
+      // if (!fs.existsSync(destDir)) {
+      //   fs.mkdirSync(destDir);
+      // }
 
       // Copy the specified file to the action repository
-      if (fs.existsSync(fileToCopy)) {
-        const fileName = filePath.split("/").pop(); // Extract the file name
-        fs.copyFileSync(fileToCopy, `${destDir}/${fileName}`);
-        console.log(`Copied ${fileToCopy} to ${destDir}/${fileName}`);
-      } else {
-        console.error(
-          `File ${fileToCopy} does not exist in repository ${repoName}`
-        );
-      }
+      // if (fs.existsSync(fileToCopy)) {
+      //   const fileName = filePath.split("/").pop(); // Extract the file name
+      //   fs.copyFileSync(fileToCopy, `${destDir}/${fileName}`);
+      //   console.log(`Copied ${fileToCopy} to ${destDir}/${fileName}`);
+      // } else {
+      //   console.error(
+      //     `File ${fileToCopy} does not exist in repository ${repoName}`
+      //   );
+      // }
 
       // Clean up the cloned repo
-      fs.rmdirSync(repoDir, { recursive: true });
+      // fs.rmdirSync(repoDir, { recursive: true });
     } catch (error) {
       console.error(`Error processing repository ${repoName}:`, error);
     }

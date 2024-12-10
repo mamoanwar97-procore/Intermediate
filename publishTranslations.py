@@ -130,13 +130,13 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         # Get the target repository
         target_repo = g.get_repo(f"{repo_owner}/{targetRepoName}")
 
-        project_xml_data = next((project for project in doc['manifest']['project'] if project['@name'] == targetRepoName ), None)
+        project_xml_data = next((project for project in doc['manifest']['project'] if project['name'] == targetRepoName ), None)
 
         # Generate a new branch in the target repo (e.g., 'feature/pr-26')
         new_branch_name = f"feature/pr-{pr_number}"
         # TODO: make this dynamic
         logging.info('final el final',project_xml_data)
-        base_branch = target_repo.get_branch(project_xml_data['@revision'])  # assuming 'main' is the base branch
+        base_branch = target_repo.get_branch(project_xml_data['revision'])  # assuming 'main' is the base branch
         target_repo.create_git_ref(ref=f"refs/heads/{new_branch_name}", sha=base_branch.commit.sha)
 
         

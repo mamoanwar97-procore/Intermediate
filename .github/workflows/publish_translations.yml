@@ -34,7 +34,10 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install xmltodict
+        run: |
+          pip install xmltodict
+          pip install requests
+
 
       - name: Run Python script
         env:

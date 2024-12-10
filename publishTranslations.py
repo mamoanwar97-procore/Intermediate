@@ -1,38 +1,37 @@
-# print all the folders in the PR
-# this will be run on the workflow
-
 import os
 import sys
 import requests
 import logging
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 # Get the PR number
 pr_number = os.getenv('PR_NUMBER')
-if pr_number == None:
+if pr_number is None:
     logging.info("PR_NUMBER not found")
     sys.exit(1)
 
 # Get the repo name it will the same repo where the PR is raised
 repo_name = os.getenv('REPO_NAME')
-if repo_name == None:
+if repo_name is None:
     logging.info("REPO_NAME not found")
     sys.exit(1)
 
 # Get the repo owner
 repo_owner = os.getenv('REPO_OWNER')
-if repo_owner == None:
+if repo_owner is None:
     logging.info("REPO_OWNER not found")
     sys.exit(1)
 
 # Get the GITHUB_TOKEN
 github_token = os.getenv('GITHUB_TOKEN')
-if github_token == None:
+if github_token is None:
     logging.info("GITHUB_TOKEN not found")
     sys.exit(1)
+
+# Debug log for token
+logging.info(f"GITHUB_TOKEN: {github_token[:5]}...")  # Log first few chars of the token (security!)
 
 # print all the folders in the PR
 def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
@@ -43,11 +42,13 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
         "Accept": "application/vnd.github.v3+json"
     }
     response = requests.get(pr_url, headers=headers)
+    
     if response.status_code != 200:
         logging.info(f"Failed to get PR details: {response.status_code}")
         sys.exit(1)
+
     pr_data = response.json()
-    pr_files = pr_data['files']
+    pr_files = pr_data.get('files', [])
 
     # Get the folders in the PR
     folders = []
@@ -60,10 +61,7 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
 def run():
     logging.info(f"PR_NUMBER: {pr_number}")
     folders = get_folders_in_pr(pr_number, repo_name, repo_owner, github_token)
-    # logging.info(folders)
-    # return folders
-
+    logging.info(f"Folders in PR: {folders}")
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format='%(message)s')
     run()

@@ -10,18 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Step 2: Install jq
-      - name: Install jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-          jq --version
-
-      # Step 3: Extract commit hash from PR title
+      # Step 1: Extract commit hash from PR title
       - name: Extract Commit Hash from PR Title
         id: extract_commit_hash
         run: |
@@ -32,12 +21,23 @@ jobs:
           COMMIT_HASH=$(echo "$PR_TITLE" | grep -oP '(?<=commit\s)[a-f0-9]{40}')
           
           if [ -z "$COMMIT_HASH" ]; then
-            echo "::error::No commit hash found in PR title."
-            exit 1
+            echo "::notice::No commit hash found in PR title."
+            exit 0
           fi
 
           echo "Commit hash extracted: $COMMIT_HASH"
           echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+
+      # Step 2: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 3: Install jq
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          jq --version
 
       # Step 4: Update database records with commit hash, status, and received_at timestamp
       - name: Update Records in Supabase

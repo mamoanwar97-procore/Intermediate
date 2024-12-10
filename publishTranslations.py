@@ -30,17 +30,18 @@ if github_token is None:
     logging.info("GITHUB_TOKEN not found")
     sys.exit(1)
 
-# Debug log for token
-logging.info(f"GITHUB_TOKEN: {github_token[:5]}...")  # Log first few chars of the token (security!)
 
 # print all the folders in the PR
 def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
     # Get the PR details
     pr_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/pulls/{pr_number}"
+    logging.info(f"PR URL: {pr_url}")
     headers = {
         "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github.v3+json"
     }
+    logging.info(f" headers: {headers}")
+
     response = requests.get(pr_url, headers=headers)
     
     if response.status_code != 200:
@@ -63,6 +64,5 @@ def run():
     folders = get_folders_in_pr(pr_number, repo_name, repo_owner, github_token)
     logging.info(f"Folders in PR: {folders}")
 
-run()
-# if __name__ == "__main__":
-#     run()
+if __name__ == "__main__":
+    run()

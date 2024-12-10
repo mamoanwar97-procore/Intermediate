@@ -11,9 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout current repository
+      - name: Checkout out intermediate repo
         uses: actions/checkout@v3
-        token: ${{ secrets.INTERMEDIATE_TOKEN }}
+        with:
+          repository: "mamoanwar97-procore/Intermediate"
+          token: ${{ secrets.INTERMEDIATE_TOKEN }}
+          path: intermediate
 
       - name: Set up Node.js
         uses: actions/setup-node@v3

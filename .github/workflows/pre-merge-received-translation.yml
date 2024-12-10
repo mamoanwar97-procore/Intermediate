@@ -38,7 +38,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      # Step 4: Update database records with commit hash, status, and delivered_at timestamp
+      # Step 4: Update database records with commit hash, status, and received_at timestamp
       - name: Update Records in Supabase
         if: env.hash_commit_exists == 'true'
         env:

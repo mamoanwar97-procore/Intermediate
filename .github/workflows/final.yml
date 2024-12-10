@@ -32,6 +32,8 @@ jobs:
       - name: Commit and Push collected files
         run: |
           git checkout -b collected-files
+           git config --global user.name "mamoanwar97-procore"
+          git config --global user.email "mahmoud.m.anwar@procore.com"
           git add .
           git commit -m "Add collected files from other repositories"
           git push origin collected-files

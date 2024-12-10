@@ -17,7 +17,7 @@ jobs:
           # Get PR title
           PR_TITLE="${{ github.event.pull_request.title }}"
           # Extract the commit hash from the title (assuming it's after "commit" and separated by a space)
-          COMMIT_HASH=$(echo "$PR_TITLE" | grep -oP '(?<=commit\s)[a-f0-9]{40}')
+          COMMIT_HASH=$(echo "$PR_TITLE" | grep -oE 'commit\s[a-f0-9]{40}' | awk '{print $2}')
           if [ -z "$COMMIT_HASH" ]; then
             echo "COMMIT_HASH=" >> $GITHUB_ENV
             echo "hash_commit_exists=false" >> $GITHUB_ENV

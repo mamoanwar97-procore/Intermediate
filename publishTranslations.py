@@ -33,32 +33,49 @@ if github_token is None:
 
 # print all the folders in the PR
 def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
-    # Get the PR details
-    pr_url = f"https://www.github.com/{repo_name}/pull/{pr_number}"
+    # Use the correct GitHub API endpoint for PR details
+    pr_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/pulls/{pr_number}"
     logging.info(f"PR URL: {pr_url}")
+
     headers = {
         "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github.v3+json"
     }
 
-    response = requests.get(pr_url,headers)
+    # Make the request to GitHub API
+    response = requests.get(pr_url, headers=headers)
     
-    # log all fields of response
-    logging.info(f" response: {response.history} , {response.json}")
-
-    if response.status_code != 200:
-        logging.info(f"Failed to get PR details: {response.status_code}")
+    # Log the response status and JSON content
+    logging.info(f"Response Status Code: {response.status_code}")
+    
+    try:
+        response_data = response.json()  # Get the response JSON content
+        logging.info(f"Response Data: {response_data}")  # Log the response data
+    except ValueError:
+        logging.error("Failed to parse response as JSON")
         sys.exit(1)
 
-    pr_data = response.json()
-    pr_files = pr_data.get('files', [])
+    if response.status_code != 200:
+        logging.error(f"Failed to get PR details: {response.status_code} - {response_data.get('message', 'No additional info')}")
+        sys.exit(1)
 
-    # Get the folders in the PR
+    # Check if the 'files' key exists in the response
+    pr_files = response_data.get('files', [])
+    
+    # If there are no files, log and return an empty list
+    if not pr_files:
+        logging.info("No files found in the PR.")
+        return []
+
+    # Get the folders in the PR by extracting folder names from file paths
     folders = []
     for pr_file in pr_files:
+        # Get the directory (folder) from the file path
         folder = os.path.dirname(pr_file['filename'])
         if folder not in folders:
             folders.append(folder)
+    
+    logging.info(f"Found folders: {folders}")
     return folders
 
 def run():

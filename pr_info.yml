@@ -25,3 +25,7 @@
   - repo_name: "MFE2"
     pr_name: "Finalll"
     pr_number: 7
+
+  - repo_name: "MFE3"
+    pr_name: "CCC"
+    pr_number: 28

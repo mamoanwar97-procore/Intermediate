@@ -20,7 +20,7 @@ parseString(xmlData, (err, result) => {
 
   projects.forEach((project) => {
     const repoName = project.$.name;
-    const branch = project.$.branch || "main"; // Default to 'main' if no branch is specified
+    const branch = project.$.revision || "main"; // Default to 'main' if no branch is specified
     const filePath = project.$.file || "en.json"; // File path to copy from the repo
 
     console.log(

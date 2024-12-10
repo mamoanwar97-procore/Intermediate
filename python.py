@@ -10,7 +10,7 @@ def run():
     default_collection_branch = os.environ.get('BRANCH')
     main_dir = os.environ.get('PWD')
     subprocess.run(['git', 'fetch'], cwd=f'{main_dir}')
-    subprocess.run(['git', 'checkout', 'main'], cwd=f'{main_dir}')
+    subprocess.run(['git', 'checkout', 'MFE_en'], cwd=f'{main_dir}')
     subprocess.run(['git', 'checkout', '-b', default_collection_branch], cwd=f'{main_dir}')
     subprocess.run(['git', 'config', 'pull.rebase', 'false'], cwd=f'{main_dir}')
     

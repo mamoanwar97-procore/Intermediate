@@ -92,8 +92,8 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     # create a pr in the target repo names with the changes under it 
     for targetRepoName in targetRepoNames:
         # create a PR in the target repo
-        pr_files = [pr_file for pr_file in pr_files if pr_file['filename'].startswith(targetRepoName)]
-        print(f"Creating PR in {targetRepoName}, with files {pr_files}")
+        current_pr_files = [pr_file for pr_file in pr_files if pr_file.startswith(targetRepoName)]
+        print(f"Creating PR in {targetRepoName}, with files {current_pr_files}")
 
 
     return targetRepoNames

@@ -25,5 +25,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
-          SLACK_HOOK_URL: ${{ github.event.inputs.pr_number }}
+          SLACK_HOOK_URL: ${{ secrets.SLACK_HOOK_URL }}
         run: python notify_teams_to_review_prs/main.py

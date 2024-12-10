@@ -43,7 +43,8 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
 
     response = requests.get(pr_url,headers)
     
-    logging.info(f" response: {response}")
+    # log all fields of response
+    logging.info(f" response: {response.history} , {response.json}")
 
     if response.status_code != 200:
         logging.info(f"Failed to get PR details: {response.status_code}")

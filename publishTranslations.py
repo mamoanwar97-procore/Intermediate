@@ -87,6 +87,7 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     targetRepoNames = [folder.split('/')[0] for folder in folders]
     targetRepoNames = list(set(targetRepoNames))
     
+    print(f"Target Repos: {pr_files}")
     # TODO: split this in a seperate function 
 
     # create a pr in the target repo names with the changes under it 

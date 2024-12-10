@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Checkout current repository
         uses: actions/checkout@v3
+        token: ${{ secrets.INTERMEDIATE_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -32,7 +33,7 @@ jobs:
       - name: Commit and Push collected files
         run: |
           git checkout -b collected-files
-           git config --global user.name "mamoanwar97-procore"
+          git config --global user.name "mamoanwar97-procore"
           git config --global user.email "mahmoud.m.anwar@procore.com"
           git add .
           git commit -m "Add collected files from other repositories"

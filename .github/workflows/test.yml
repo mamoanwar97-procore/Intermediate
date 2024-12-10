@@ -29,8 +29,7 @@ jobs:
         run: pip install xmltodict
 
       - name: Run Python script
+        env:
+          GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
+          BRANCH: translations-collection-${{ github.run_number }}
         run: python python.py
-        with:
-          env:
-            GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
-            BRANCH: translations-collection-${{ github.run_number }}

@@ -2,6 +2,9 @@ import os
 import sys
 import requests
 import logging
+from github import Github
+from git import Repo
+from shutil import rmtree
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -101,21 +104,59 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
 
 
 def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
-    # create a new branch in the target repo
-    url = f"https://api.github.com/repos/{repo_owner}/{targetRepoName}/git/refs"
-    headers = {
-        "Authorization": f"Bearer {github_token}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    headers = {k: str(v) for k, v in headers.items()}
-    data = {
-        "ref": "refs/heads/translations",
-        "sha": "master"
-    }
-    response = requests.post(url, headers=headers, json=data)
-    print('final',response.json())
+ # Create a new branch in the target repository
+    target_repo = g.get_repo(f"{repo_owner}/{targetRepoName}")
+    
+    # Clone the target repository to a local directory (temp)
+    clone_dir = f"/tmp/{targetRepoName}_clone"
+    if os.path.exists(clone_dir):
+        rmtree(clone_dir)  # Clean up old clone if exists
 
-    # create a new PR in the target repo
+    logging.info(f"Cloning {targetRepoName} to {clone_dir}")
+    repo = Repo.clone_from(target_repo.clone_url, clone_dir, branch='main')
+
+    # Create a new branch (use PR number as the branch name)
+    branch_name = f"pr-{pr_number}"
+    new_branch = repo.create_head(branch_name)
+    new_branch.checkout()
+
+    # Now copy the relevant files into the cloned repository
+    for pr_file in pr_files:
+        file_path = pr_file['filename']
+        # Assuming that the file content comes from the original PR repo
+        source_url = f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/main/{file_path}"
+        response = requests.get(source_url)
+        
+        if response.status_code == 200:
+            content = response.content
+            file_path_in_repo = os.path.join(clone_dir, file_path)
+            os.makedirs(os.path.dirname(file_path_in_repo), exist_ok=True)
+            with open(file_path_in_repo, 'wb') as f:
+                f.write(content)
+            logging.info(f"Added {file_path} to the new branch.")
+        else:
+            logging.warning(f"Could not fetch {file_path} from the source repository.")
+
+    # Stage the changes and commit them
+    repo.git.add(A=True)  # Add all files
+    repo.index.commit(f"Add files for PR {pr_number} from {repo_name}")
+    
+    # Push the new branch to the target repository
+    origin = repo.remotes.origin
+    origin.push(branch_name)
+
+    # Create the pull request in the target repository
+    pr_title = f"PR #{pr_number} - Changes from {repo_name}"
+    pr_body = f"This PR includes changes from the PR #{pr_number} in {repo_name}."
+    target_branch = 'main'  # Or adjust if you have another default branch
+
+    pr = target_repo.create_pull(
+        title=pr_title,
+        body=pr_body,
+        head=branch_name,
+        base=target_branch
+    )
+
 
 
 

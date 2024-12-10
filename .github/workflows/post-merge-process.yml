@@ -3,7 +3,7 @@ name: Post Merge Process
 on:
   push:
     branches:
-      - main
+      - mixin
 
 jobs:
   process-pr-info:

@@ -7,8 +7,8 @@ with open(f'{parent_dir}/reference.xml') as fd:
     doc = xmltodict.parse(fd.read())
 
 def run():
-    main_dir = os.environ.get('PWD')
     default_collection_branch = os.environ.get('BRANCH')
+    main_dir = os.environ.get('PWD')
     subprocess.run(['git', 'fetch'], cwd=f'{main_dir}')
     subprocess.run(['git', 'checkout', 'main'], cwd=f'{main_dir}')
     subprocess.run(['git', 'checkout', '-b', default_collection_branch], cwd=f'{main_dir}')

@@ -1,0 +1,82 @@
+name: Update Translation Status
+
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Extract commit hash from PR title
+      - name: Extract Commit Hash from PR Title
+        id: extract_commit_hash
+        run: |
+          # Get PR title
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          # Extract the commit hash from the title (assuming it's after "commit" and separated by a space)
+          COMMIT_HASH=$(echo "$PR_TITLE" | grep -oE 'commit\s[a-f0-9]{40}' | awk '{print $2}')
+          if [ -z "$COMMIT_HASH" ]; then
+            echo "COMMIT_HASH=" >> $GITHUB_ENV
+            echo "hash_commit_exists=false" >> $GITHUB_ENV
+          else
+            echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+            echo "hash_commit_exists=true" >> $GITHUB_ENV
+          fi
+
+      # Step 2: Checkout the repository
+      - name: Checkout code
+        if: env.hash_commit_exists == 'true'
+        uses: actions/checkout@v3
+
+      # Step 3: Install jq
+      - name: Install jq
+        if: env.hash_commit_exists == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      # Step 4: Update database records with commit hash, status, and received_at timestamp
+      - name: Update Records in Supabase
+        if: env.hash_commit_exists == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          COMMIT_HASH: ${{ env.COMMIT_HASH }}
+        run: |
+          RECEIVED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          NEW_STATUS="RECEIVED"
+          UPDATE_PAYLOAD=$(jq -n \
+            --arg commit_hash "$COMMIT_HASH" \
+            --arg new_status "$NEW_STATUS" \
+            --arg received_at "$RECEIVED_AT" \
+            '{ 
+                commit_hash: $commit_hash, 
+                status: $new_status, 
+                received_at: $received_at
+            }')
+
+          echo "Sending update payload: $UPDATE_PAYLOAD"
+
+          # Send the update request to Supabase and capture HTTP status code
+          RESPONSE=$(curl -s -o response_body.txt -w "%{http_code}" -X PATCH \
+            "$SUPABASE_URL/rest/v1/translation_processes?commit_hash=eq.$COMMIT_HASH" \
+            -H "Content-Type: application/json" \
+            -H "apiKey: $SUPABASE_SERVICE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            --data "$UPDATE_PAYLOAD")
+
+          echo "API response code: $RESPONSE"
+          echo "Response body:"
+          cat response_body.txt
+
+          # Check if the response code is in the 200-299 range
+          if [[ "$RESPONSE" =~ ^2[0-9]{2}$ ]]; then
+            echo "::notice::Records updated successfully."
+          else
+            ERROR_MESSAGE=$(cat response_body.txt | jq -r '.message // "No message provided"')
+            echo "::error::Failed to update records. HTTP Code: $RESPONSE, Message: $ERROR_MESSAGE"
+            exit 1
+          fi

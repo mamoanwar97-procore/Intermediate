@@ -1,0 +1,134 @@
+name: Post Merge Process
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  process-pr-info:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install `yq` and `jq`
+      - name: Install yq and jq
+        run: |
+          sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/bin/yq
+          yq --version
+          sudo apt-get update
+          sudo apt-get install -y jq
+          jq --version
+
+      # Step 3: Read and parse `pr_info.yml` data
+      - name: Parse PR info
+        id: parse_pr_info
+        run: |
+          if [ ! -f pr_info.yml ]; then
+            echo "::error::pr_info.yml not found. Exiting."
+            exit 1
+          fi
+
+          # Extract current pull request details
+          PR_NAME=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
+          PR_NUMBER=$(jq -r '.pull_request.number' $GITHUB_EVENT_PATH)
+
+          # Extract sources into JSON
+          # Convert sources to JSON array
+          yq eval -o=json '.sources' pr_info.yml > sources.json
+          # Debug: Print the contents of sources.json
+          cat sources.json
+
+          echo "PR_NAME=$PR_NAME" >> $GITHUB_ENV
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+
+      # Step 4: Insert into `translation_processes`
+      - name: Insert into translation_processes (Bulk Insert)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ ! -s sources.json ]; then
+            echo "::error::sources.json is empty or missing."
+            exit 1
+          fi
+
+          # Debug: Validate sources.json as JSON before processing
+          jq . sources.json > /dev/null
+          if [ $? -ne 0 ]; then
+            echo "::error::sources.json is not valid JSON."
+            exit 1
+          fi
+
+          # Debug: Print the contents of sources.json again
+          echo "Contents of sources.json:"
+          cat sources.json
+
+          # Get the commit hash of the merge commit
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+
+          # Prepare bulk data as a JSON array with proper escaping
+          BULK_DATA=$(jq -c --arg pr_name "$PR_NAME" \
+            --arg pr_number "$PR_NUMBER" \
+            --arg commit_hash "$COMMIT_HASH" \
+            '[.[] | { 
+                pr_name: $pr_name, 
+                pr_number: ($pr_number | tonumber), 
+                source_repo_name: .repo_name, 
+                source_pr_name: .pr_name, 
+                source_pr_number: .pr_number,
+                commit_hash: $commit_hash
+            } ]' < sources.json)
+
+          # Validate the constructed BULK_DATA
+          echo "Validating BULK_DATA JSON:"
+          echo "$BULK_DATA" | jq .
+
+          # Send bulk data to Supabase
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "$SUPABASE_URL/rest/v1/translation_processes" \
+            -H "Content-Type: application/json" \
+            -H "apiKey: $SUPABASE_SERVICE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            --data "$BULK_DATA")
+
+          echo "API response code: $RESPONSE"
+
+          # Handle the response code
+          if [ "$RESPONSE" -eq 201 ]; then
+            echo "::notice::Bulk data inserted successfully."
+          else
+            echo "::error::Failed to insert bulk data. HTTP status: $RESPONSE"
+            exit 1
+          fi
+
+      # Step 5: Reset the `pr_info.yml` file
+      - name: Reset pr_info.yml
+        run: |
+          truncate -s 0 pr_info.yml
+          echo "sources:" >> pr_info.yml
+          if [ ! -s pr_info.yml ]; then
+            echo "::error::Failed to reset pr_info.yml."
+            exit 1
+          else
+            echo "::notice::pr_info.yml successfully reset."
+          fi
+
+      # Step 6: Commit the reset `pr_info.yml` file
+      - name: Commit changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
+        run: |
+          git config --global user.name "rowan-procore"
+          git config --global user.email "rowan.ibrahim@procore.com"
+          git add pr_info.yml
+          git commit -m "Reset pr_info.yml after processing"
+          git push origin HEAD:${{ github.event.pull_request.base.ref }}

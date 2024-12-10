@@ -34,11 +34,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
           BRANCH: translations-collection-${{ github.run_number }}
         run: python python.py
-
-      - name: Open PR
-        uses: peter-evans/create-pull-request@v7
-        with:
-          branch: translations-collection-${{ github.run_number }}
-          base: main
-          title: "Translations Collection"
-          token: ${{ secrets.INTERMEDIATE_TOKEN }}

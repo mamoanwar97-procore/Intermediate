@@ -55,35 +55,35 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     # Log the response status and JSON content
     logging.info(f"Response Status Code: {response.status_code}")
     
-    # try:
-    #     response_data = response.json()  # Get the response JSON content
-    #     logging.info(f"Response Data: {response_data}")  # Log the response data
-    # except ValueError:
-    #     logging.error("Failed to parse response as JSON")
-    #     sys.exit(1)
+    try:
+        response_data = response.json()  # Get the response JSON content
+        logging.info(f"Response Data: {response_data}")  # Log the response data
+    except ValueError:
+        logging.error("Failed to parse response as JSON")
+        sys.exit(1)
 
-    # if response.status_code != 200:
-    #     logging.error(f"Failed to get PR details: {response.status_code} - {response_data.get('message', 'No additional info')}")
-    #     sys.exit(1)
+    if response.status_code != 200:
+        logging.error(f"Failed to get PR details: {response.status_code} - {response_data.get('message', 'No additional info')}")
+        sys.exit(1)
 
-    # # Check if the 'files' key exists in the response
-    # pr_files = response_data.get('files', [])
+    # Check if the 'files' key exists in the response
+    pr_files = response_data.get('files', [])
     
-    # # If there are no files, log and return an empty list
-    # if not pr_files:
-    #     logging.info("No files found in the PR.")
-    #     return []
+    # If there are no files, log and return an empty list
+    if not pr_files:
+        logging.info("No files found in the PR.")
+        return []
 
-    # # Get the folders in the PR by extracting folder names from file paths
-    # folders = []
-    # for pr_file in pr_files:
-    #     # Get the directory (folder) from the file path
-    #     folder = os.path.dirname(pr_file['filename'])
-    #     if folder not in folders:
-    #         folders.append(folder)
+    # Get the folders in the PR by extracting folder names from file paths
+    folders = []
+    for pr_file in pr_files:
+        # Get the directory (folder) from the file path
+        folder = os.path.dirname(pr_file['filename'])
+        if folder not in folders:
+            folders.append(folder)
     
-    # logging.info(f"Found folders: {folders}")
-    # return folders
+    logging.info(f"Found folders: {folders}")
+    return folders
 
 def run():
     logging.info(f"PR_NUMBER: {pr_number}")

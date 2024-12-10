@@ -1,0 +1,29 @@
+name: slack_notification
+on:
+  workflow_dispatch:
+jobs:
+  run-python-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Git
+        run: |
+          git config --global user.name "mamoanwar97-procore"
+          git config --global user.email "mahmoud.m.anwar@procore.com"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install xmltodict
+          pip install requests
+
+      - name: Run Python script
+        env:
+          GH_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
+          SLACK_HOOK_URL: ${{ github.event.inputs.pr_number }}
+        run: python notify_teams_to_review_prs/main.py

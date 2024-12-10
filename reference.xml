@@ -2,7 +2,7 @@
 <manifest>
   <remote name="origin" fetch="."/>
   <default remote="origin" revision="main" sync-j="1"/>
-  <project name="MFE2" revision="develop" slack="['https://procore.enterprise.slack.com/archives/C084BH2CXV2']" />
-  <project name="MFE1" slack="['https://procore.enterprise.slack.com/archives/C084BH2CXV2', 'https://procore.enterprise.slack.com/archives/C0842DDGJQ6']" />
-  <project name="MFE3" revision="master" slack="['https://procore.enterprise.slack.com/archives/C0842DDGJQ6']" />
+  <project name="MFE2" revision="develop" slack="https://procore.enterprise.slack.com/archives/C084BH2CXV2" />
+  <project name="MFE1" slack="https://procore.enterprise.slack.com/archives/C084BH2CXV2,https://procore.enterprise.slack.com/archives/C0842DDGJQ6" />
+  <project name="MFE3" revision="master" slack="https://procore.enterprise.slack.com/archives/C0842DDGJQ6" />
 </manifest>

@@ -132,7 +132,6 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         new_branch_name = f"feature/pr-{pr_number}-{current_time}"
         # TODO: make this dynamic
         revision = project_xml_data.get('@revision', 'main')
-        logging.info('final el final',project_xml_data)
         base_branch = target_repo.get_branch(revision)
         target_repo.create_git_ref(ref=f"refs/heads/{new_branch_name}", sha=base_branch.commit.sha)
 

@@ -29,12 +29,11 @@ parseString(xmlData, (err, result) => {
 
     try {
       // Clone the repo with the specified branch
-      const repoDir = `${parentDir}/${repoName}`;
-
       execSync(
-        `git clone --branch ${branch} https://github.com/${repoDir}.git`,
+        `git clone --branch ${branch} https://github.com/mamoanwar97-procore/${repoName}.git`,
         { stdio: "inherit" }
       );
+      const repoDir = `${parentDir}/${repoName}`;
 
       // Navigate into the cloned repo
       const fileToCopy = `${repoDir}/${filePath}`;

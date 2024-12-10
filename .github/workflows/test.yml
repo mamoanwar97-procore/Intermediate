@@ -41,3 +41,4 @@ jobs:
           branch: translations-collection-${{ github.run_number }}
           base: main
           title: "Translations Collection"
+          token: ${{ secrets.INTERMEDIATE_TOKEN }}

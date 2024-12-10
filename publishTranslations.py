@@ -33,6 +33,8 @@ if github_token is None:
     logging.info("GITHUB_TOKEN not found")
     sys.exit(1)
 
+g = Github(github_token)
+
 if isinstance(github_token, bytes):
     logging.info("GITHUB_TOKEN is bytes")
     github_token = github_token.decode('utf-8')

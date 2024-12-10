@@ -113,8 +113,17 @@ jobs:
         run: |
           echo "" > pr_info.yml
           if [ ! -s pr_info.yml ]; then
-          echo "::notice::pr_info.yml successfully reset."
+            echo "::notice::pr_info.yml successfully reset."
           else
-          echo "::error::Failed to reset pr_info.yml."
-          exit 1
+            echo "::error::Failed to reset pr_info.yml."
+            exit 1
           fi
+
+      # Step 6: Commit the reset `pr_info.yml` file
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add pr_info.yml
+          git commit -m "Reset pr_info.yml after processing"
+          git push origin main

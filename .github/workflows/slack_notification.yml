@@ -6,6 +6,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.INTERMEDIATE_TOKEN }}
+          fetch-depth: 0
+
       - name: Set up Git
         run: |
           git config --global user.name "mamoanwar97-procore"

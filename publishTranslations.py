@@ -3,8 +3,6 @@ import sys
 import requests
 import logging
 from github import Github
-from git import Repo
-from shutil import rmtree
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -33,16 +31,16 @@ if github_token is None:
     logging.info("GITHUB_TOKEN not found")
     sys.exit(1)
 
-g = Github(github_token)
-
+# Decode and strip the GitHub token to remove any unwanted characters (such as \n or extra spaces)
 if isinstance(github_token, bytes):
-    logging.info("GITHUB_TOKEN is bytes")
     github_token = github_token.decode('utf-8')
 
+# Ensure the token is stripped of any extra whitespace
+github_token = github_token.strip()
 
-# print all the folders in the PR
+# Function to get the folders in a pull request
 def get_folders_in_pr(pr_number, repo_name, github_token):
-    # Use the correct GitHub API endpoint for PR details
+    # GitHub API URL to get PR files
     pr_url = f"https://api.github.com/repos/{repo_name}/pulls/{pr_number}/files"
     logging.info(f"PR URL: {pr_url}")
 
@@ -51,11 +49,8 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
         "Accept": "application/vnd.github.v3+json"
     }
 
-    headers = {k: str(v) for k, v in headers.items()}
-
-
     # Make the request to GitHub API
-    response = requests.get(pr_url, headers)
+    response = requests.get(pr_url, headers=headers)
     
     # Log the response status and JSON content
     logging.info(f"Response Status Code: {response.status_code}")
@@ -82,7 +77,6 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     # Get the folders in the PR by extracting folder names from file paths
     folders = []
     for pr_file in pr_files:
-        # Get the directory (folder) from the file path
         folder = os.path.dirname(pr_file['filename'])
         if folder not in folders:
             folders.append(folder)
@@ -92,78 +86,59 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     targetRepoNames = [folder.split('/')[0] for folder in folders]
     targetRepoNames = list(set(targetRepoNames))
     
-    print(f"Target Repos: {pr_files}")
+    logging.info(f"Target Repos: {targetRepoNames}")
     # TODO: split this in a seperate function 
-    # create a pr in the target repo names with the changes under it 
+    # Create PRs in the target repositories
     for targetRepoName in targetRepoNames:
-        # create a PR in the target repo
         current_pr_files = [pr_file for pr_file in pr_files if pr_file['filename'].startswith(targetRepoName)]
-        print(f"Creating PR in {targetRepoName}, with files {current_pr_files}")
-        # create a PR in the target repo
+        logging.info(f"Creating PR in {targetRepoName}, with files {current_pr_files}")
         create_pr_in_target_repo(targetRepoName, current_pr_files, github_token)
 
     return targetRepoNames
 
 
+# Function to create a PR in the target repo
 def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
- # Create a new branch in the target repository
-    target_repo = g.get_repo(f"{repo_owner}/{targetRepoName}")
-    
-    # Clone the target repository to a local directory (temp)
-    clone_dir = f"/tmp/{targetRepoName}_clone"
-    if os.path.exists(clone_dir):
-        rmtree(clone_dir)  # Clean up old clone if exists
+    try:
+        # Authenticate with GitHub using the token
+        g = Github(github_token)
 
-    logging.info(f"Cloning {targetRepoName} to {clone_dir}")
-    repo = Repo.clone_from(target_repo.clone_url, clone_dir, branch='main')
+        # Get the target repository
+        target_repo = g.get_repo(f"{repo_owner}/{targetRepoName}")
 
-    # Create a new branch (use PR number as the branch name)
-    branch_name = f"pr-{pr_number}"
-    new_branch = repo.create_head(branch_name)
-    new_branch.checkout()
+        # Generate a new branch in the target repo (e.g., 'feature/pr-26')
+        new_branch_name = f"feature/pr-{pr_number}"
+        base_branch = target_repo.get_branch("main")  # assuming 'main' is the base branch
+        target_repo.create_git_ref(ref=f"refs/heads/{new_branch_name}", sha=base_branch.commit.sha)
 
-    # Now copy the relevant files into the cloned repository
-    for pr_file in pr_files:
-        file_path = pr_file['filename']
-        # Assuming that the file content comes from the original PR repo
-        source_url = f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/main/{file_path}"
-        response = requests.get(source_url)
-        
-        if response.status_code == 200:
-            content = response.content
-            file_path_in_repo = os.path.join(clone_dir, file_path)
-            os.makedirs(os.path.dirname(file_path_in_repo), exist_ok=True)
-            with open(file_path_in_repo, 'wb') as f:
-                f.write(content)
-            logging.info(f"Added {file_path} to the new branch.")
-        else:
-            logging.warning(f"Could not fetch {file_path} from the source repository.")
+        # Add files to the new branch
+        for pr_file in pr_files:
+            target_repo.create_file(
+                pr_file['filename'],
+                f"Add changes from PR {pr_number}",
+                pr_file['patch'],  # The file patch (content)
+                branch=new_branch_name
+            )
 
-    # Stage the changes and commit them
-    repo.git.add(A=True)  # Add all files
-    repo.index.commit(f"Add files for PR {pr_number} from {repo_name}")
-    
-    # Push the new branch to the target repository
-    origin = repo.remotes.origin
-    origin.push(branch_name)
+        # Create the pull request in the target repo
+        pr_title = f"PR {pr_number}: Changes from {repo_name}"
+        pr_body = f"Pull request automatically created from PR {pr_number} in {repo_name}."
+        target_repo.create_pull(
+            title=pr_title,
+            body=pr_body,
+            head=new_branch_name,
+            base="main"  # assuming 'main' is the base branch
+        )
 
-    # Create the pull request in the target repository
-    pr_title = f"PR #{pr_number} - Changes from {repo_name}"
-    pr_body = f"This PR includes changes from the PR #{pr_number} in {repo_name}."
-    target_branch = 'main'  # Or adjust if you have another default branch
-
-    pr = target_repo.create_pull(
-        title=pr_title,
-        body=pr_body,
-        head=branch_name,
-        base=target_branch
-    )
+        logging.info(f"Successfully created PR in {targetRepoName}")
+    except Exception as e:
+        logging.error(f"Error creating PR in {targetRepoName}: {str(e)}")
 
 
-
-
+# Main function to execute the process
 def run():
     get_folders_in_pr(pr_number, repo_name, github_token)
+
 
 if __name__ == "__main__":
     run()

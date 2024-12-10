@@ -52,10 +52,12 @@ jobs:
             --arg commit_hash "$COMMIT_HASH" \
             --arg new_status "$NEW_STATUS" \
             --arg received_at "$RECEIVED_AT" \
+            --arg pr_number "${{ github.event.pull_request.number }}" \
             '{ 
                 commit_hash: $commit_hash, 
                 status: $new_status, 
-                received_at: $received_at
+                received_at: $received_at,
+                translator_pr_number: $pr_number
             }')
 
           echo "Sending update payload: $UPDATE_PAYLOAD"

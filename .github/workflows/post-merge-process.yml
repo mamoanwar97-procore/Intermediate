@@ -91,7 +91,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "apiKey: $SUPABASE_SERVICE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-            --data "$BULK_DATA")
+            --data '$BULK_DATA')
 
           echo "API response: $RESPONSE"
 

@@ -19,14 +19,14 @@ jobs:
           
           # Extract the commit hash from the title (assuming it's after "commit" and separated by a space)
           COMMIT_HASH=$(echo "$PR_TITLE" | grep -oP '(?<=commit\s)[a-f0-9]{40}')
-          
-          if [ -z "$COMMIT_HASH" ]; then
-            echo "::notice::No commit hash found in PR title."
-            exit 0
-          fi
 
-          echo "Commit hash extracted: $COMMIT_HASH"
-          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          if [ -z "$COMMIT_HASH" ]; then
+            echo "::notice::No commit hash found in PR title. Proceeding without it."
+            COMMIT_HASH=""  # Set COMMIT_HASH to an empty string or a default value
+          else
+            echo "Commit hash extracted: $COMMIT_HASH"
+            echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          fi
 
       # Step 2: Checkout the repository
       - name: Checkout code

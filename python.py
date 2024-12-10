@@ -22,7 +22,7 @@ for project in doc['manifest']['project']:
     branch = project.get('@branch')
     
     # create new branch to collect all translations updates from all repos
-    subprocess.run(['git', 'pull', branch])
+    subprocess.run(['git', 'pull', f'origin/{branch}'])
     
 # subprocess.run(['git', 'push', 'origin', default_collection_branch])
 # # subprocess.run(['gh', 'pr', 'create', '--base', 'main', '--head', default_collection_branch, '--title', 'Translations Update', '--body', 'Translations Update'])

@@ -123,9 +123,11 @@ jobs:
 
       # Step 6: Commit the reset `pr_info.yml` file
       - name: Commit changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
         run: |
           git config --global user.name "rowan-procore"
           git config --global user.email "rowan.ibrahim@procore.com"
           git add pr_info.yml
           git commit -m "Reset pr_info.yml after processing"
-          git push origin main
+          git push origin HEAD:${{ github.event.pull_request.base.ref }}

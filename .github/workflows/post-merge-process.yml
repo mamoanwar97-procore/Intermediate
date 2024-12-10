@@ -90,26 +90,23 @@ jobs:
           echo "$BULK_DATA" | jq .
 
           # Send bulk data to Supabase
-          RESPONSE=$(curl -s -X POST \
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
             "$SUPABASE_URL/rest/v1/translation_processes" \
             -H "Content-Type: application/json" \
             -H "apiKey: $SUPABASE_SERVICE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
             --data "$BULK_DATA")
 
-          echo "API response: $RESPONSE"
+          echo "API response code: $RESPONSE"
 
-            # Check for status code in the response
-            STATUS_CODE=$(echo "$RESPONSE" | jq -r '.status // empty')
-            if [ "$STATUS_CODE" != "201" ]; then
-              ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.message // "No message provided"')
-              ERROR_DETAILS=$(echo "$RESPONSE" | jq -r '.details // "No additional details provided"')
-              ERROR_HINT=$(echo "$RESPONSE" | jq -r '.hint // "No hints provided"')
-              echo "::error::Failed to insert bulk data. Status Code: $STATUS_CODE, Message: $ERROR_MESSAGE, Details: $ERROR_DETAILS, Hint: $ERROR_HINT"
-              exit 1
-            else
+          # Handle the response code
+          if [ "$RESPONSE" -eq 201 ]; then
             echo "::notice::Bulk data inserted successfully."
-            fi
+          else
+            echo "::error::Failed to insert bulk data. HTTP status: $RESPONSE"
+            exit 1
+          fi
+
       # Step 5: Reset the `pr_info.yml` file
       - name: Reset pr_info.yml
         run: |

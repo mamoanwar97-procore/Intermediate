@@ -1,5 +1,5 @@
 aggregator:
-  pr_name: "send hash commit to supadatabase......"
+  pr_name: "send hash commit to supadatabase... with double quotations"
   pr_number: 1234
 sources:
   - repo_name: "MFE1"

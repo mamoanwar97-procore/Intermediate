@@ -111,13 +111,12 @@ jobs:
       # Step 5: Reset the `pr_info.yml` file
       - name: Reset pr_info.yml
         run: |
-          echo "" > pr_info.yml
+          truncate -s 0 pr_info.yml
           if [ ! -s pr_info.yml ]; then
             echo "::notice::pr_info.yml successfully reset."
           else
             echo "::error::Failed to reset pr_info.yml."
             exit 1
-          fi
 
       # Step 6: Commit the reset `pr_info.yml` file
       - name: Commit changes

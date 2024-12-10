@@ -30,6 +30,10 @@ if github_token is None:
     logging.info("GITHUB_TOKEN not found")
     sys.exit(1)
 
+if isinstance(github_token, bytes):
+    logging.info("GITHUB_TOKEN is bytes")
+    github_token = github_token.decode('utf-8')
+
 
 # print all the folders in the PR
 def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):

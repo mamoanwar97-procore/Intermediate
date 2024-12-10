@@ -39,7 +39,7 @@ jobs:
           pip install requests
           pip install PyGithub
           pip install gitpython
-
+          pip install re
 
       - name: Run Python script
         env:

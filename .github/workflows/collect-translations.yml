@@ -41,6 +41,6 @@ jobs:
         with:
           github-token: ${{ secrets.INTERMEDIATE_TOKEN }}
           from-branch: translations-collection-${{ github.run_number }}
-          to-branch: main
+          to-branch: MFE_en
           repository-owner: mamoanwar97-procore
           repository: Intermediate

@@ -1,0 +1,53 @@
+# This workflow will be triggered manually 
+# and will run on the latest PR that is created by branch name that starts with `smart-ling`
+# and will create a PR on the MFE repo with the changes.
+
+name: Publish Translations
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR Number'
+        required: true
+        default: '0'
+
+jobs:
+  run-python-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.INTERMEDIATE_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "mamoanwar97-procore"
+          git config --global user.email "mahmoud.m.anwar@procore.com"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install xmltodict
+
+      - name: Run Python script
+        env:
+          GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: python publishTranslations.py
+
+      - name: Open PR
+        uses: rematocorp/open-pull-request-action@v1
+        with:
+          github-token: ${{ secrets.INTERMEDIATE_TOKEN }}
+          from-branch: translations-collection-${{ github.run_number }}
+          to-branch: MFE_en
+          repository-owner: mamoanwar97-procore
+          repository: Intermediate
+

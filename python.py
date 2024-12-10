@@ -14,4 +14,4 @@ with open(f'{parent_dir}/reference.xml') as fd:
 
 #git clone the current repo
 subprocess.run(['git', 'clone', '-b', main_branch, f'git@github.com:{username}/{repo}', f'{parent_dir}/{repo}'])
-subprocess.run(['cd', f'{parent_dir}/{repo}'])
+subprocess.run(['cd', f'{repo}'])

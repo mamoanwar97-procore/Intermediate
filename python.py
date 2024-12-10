@@ -3,9 +3,10 @@ import xmltodict
 import subprocess
 
 parent_dir = os.getcwd()
-default_collection_branch = 'translations-collection'
+default_collection_branch = os.environ.get('BRANCH')
 env = os.environ.copy()
 print(env)
+print(default_collection_branch)
 
 # Parse the XML file
 with open(f'{parent_dir}/reference.xml') as fd:

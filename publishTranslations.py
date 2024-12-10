@@ -63,5 +63,6 @@ def run():
     folders = get_folders_in_pr(pr_number, repo_name, repo_owner, github_token)
     logging.info(f"Folders in PR: {folders}")
 
+run()
 # if __name__ == "__main__":
 #     run()

@@ -135,6 +135,7 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         # Generate a new branch in the target repo (e.g., 'feature/pr-26')
         new_branch_name = f"feature/pr-{pr_number}"
         # TODO: make this dynamic
+        logging.info('final el final',project_xml_data)
         base_branch = target_repo.get_branch(project_xml_data['@revision'])  # assuming 'main' is the base branch
         target_repo.create_git_ref(ref=f"refs/heads/{new_branch_name}", sha=base_branch.commit.sha)
 

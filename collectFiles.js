@@ -21,7 +21,7 @@ parseString(xmlData, (err, result) => {
   projects.forEach((project) => {
     const repoName = project.$.name;
     const branch = project.$.branch || "main"; // Default to 'main' if no branch is specified
-    const filePath = project.$.file; // File path to copy from the repo
+    const filePath = project.$.file || "en.json"; // File path to copy from the repo
 
     console.log(
       `Processing ${repoName} on branch ${branch}, file: ${filePath}`

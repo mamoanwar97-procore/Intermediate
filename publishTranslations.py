@@ -9,6 +9,16 @@ import subprocess
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
+doc = None
+parent_dir = os.getcwd()
+with open(f'{parent_dir}/reference.xml') as fd:
+    doc = xmltodict.parse(fd.read())
+
+# def test():
+#     print(doc['manifest']['project'])
+#     project_xml_data = next((project for project in doc['manifest']['project'] if project['@name'] == 'MFE1' ), None)
+#     print(project_xml_data)
+
 # Get the PR number
 pr_number = os.getenv('PR_NUMBER')
 if pr_number is None:
@@ -41,9 +51,7 @@ if isinstance(github_token, bytes):
 github_token = github_token.strip()
 
 # Parse the XML file
-parent_dir = os.getcwd()
-with open(f'{parent_dir}/reference.xml') as fd:
-    doc = xmltodict.parse(fd.read())
+
 
 # for project in doc['manifest']['project']:
 #     repo = project['@name']
@@ -130,13 +138,14 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         # Get the target repository
         target_repo = g.get_repo(f"{repo_owner}/{targetRepoName}")
 
-        project_xml_data = next((project for project in doc['manifest']['project'] if project['name'] == targetRepoName ), None)
+        project_xml_data = next((project for project in doc['manifest']['project'] if project['@name'] == targetRepoName ), None)
 
         # Generate a new branch in the target repo (e.g., 'feature/pr-26')
         new_branch_name = f"feature/pr-{pr_number}"
         # TODO: make this dynamic
         logging.info('final el final',project_xml_data)
-        base_branch = target_repo.get_branch(project_xml_data['revision'])  # assuming 'main' is the base branch
+        # project_xml_data['@revision'] or main
+        base_branch = target_repo.get_branch(project_xml_data.get('@revision', 'main')  )  # assuming 'main' is the base branch
         target_repo.create_git_ref(ref=f"refs/heads/{new_branch_name}", sha=base_branch.commit.sha)
 
         
@@ -170,6 +179,9 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
 # Main function to execute the process
 def run():
     get_folders_in_pr(pr_number, repo_name, github_token)
+
+
+
 
 
 if __name__ == "__main__":

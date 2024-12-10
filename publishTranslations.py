@@ -57,11 +57,12 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
             folders.append(folder)
     return folders
 
-def main():
+def run():
     logging.info(f"PR_NUMBER: {pr_number}")
     folders = get_folders_in_pr(pr_number, repo_name, repo_owner, github_token)
     logging.info(folders)
     return folders
 
+
 if __name__ == "__main__":
-    main()
+    run()

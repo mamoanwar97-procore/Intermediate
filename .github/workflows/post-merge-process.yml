@@ -101,9 +101,10 @@ jobs:
 
           # Check for errors in the response
           if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
+            ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.message // "No message provided"')
             ERROR_DETAILS=$(echo "$RESPONSE" | jq -r '.details // "No additional details provided"')
             ERROR_HINT=$(echo "$RESPONSE" | jq -r '.hint // "No hints provided"')
-            echo "::error::Failed to insert bulk data. Message: $(echo "$RESPONSE" | jq -r '.message'), Details: $ERROR_DETAILS, Hint: $ERROR_HINT"
+            echo "::error::Failed to insert bulk data. Message: $ERROR_MESSAGE, Details: $ERROR_DETAILS, Hint: $ERROR_HINT"
             exit 1
           else
             echo "::notice::Bulk data inserted successfully."

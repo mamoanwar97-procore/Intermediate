@@ -99,17 +99,17 @@ jobs:
 
           echo "API response: $RESPONSE"
 
-          # Check for errors in the response
-          if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
-            ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.message // "No message provided"')
-            ERROR_DETAILS=$(echo "$RESPONSE" | jq -r '.details // "No additional details provided"')
-            ERROR_HINT=$(echo "$RESPONSE" | jq -r '.hint // "No hints provided"')
-            echo "::error::Failed to insert bulk data. Message: $ERROR_MESSAGE, Details: $ERROR_DETAILS, Hint: $ERROR_HINT"
-            exit 1
-          else
+            # Check for status code in the response
+            STATUS_CODE=$(echo "$RESPONSE" | jq -r '.status // empty')
+            if [ "$STATUS_CODE" != "201" ]; then
+              ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.message // "No message provided"')
+              ERROR_DETAILS=$(echo "$RESPONSE" | jq -r '.details // "No additional details provided"')
+              ERROR_HINT=$(echo "$RESPONSE" | jq -r '.hint // "No hints provided"')
+              echo "::error::Failed to insert bulk data. Status Code: $STATUS_CODE, Message: $ERROR_MESSAGE, Details: $ERROR_DETAILS, Hint: $ERROR_HINT"
+              exit 1
+            else
             echo "::notice::Bulk data inserted successfully."
-          fi
-
+            fi
       # Step 5: Reset the `pr_info.yml` file
       - name: Reset pr_info.yml
         run: |

@@ -82,6 +82,11 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
         if folder not in folders:
             folders.append(folder)
     
+    # this is the folders example ['MFE1/translations', 'MFE1/translations/lvl2/v1', 'MFE2/translations/src/locales', 'MFE3/translations/src/dummy/es']
+    # group by the first slice of the folder like MFE1 or MFE2
+    folders = [folder.split('/')[0] for folder in folders]
+    folders = list(set(folders))
+
     logging.info(f"Found folders: {folders}")
     return folders
 

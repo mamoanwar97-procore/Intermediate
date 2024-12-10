@@ -45,12 +45,12 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
         "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github.v3+json"
     }
-    
+
     headers = {k: str(v) for k, v in headers.items()}
 
 
     # Make the request to GitHub API
-    response = requests.get(pr_url, headers=headers)
+    response = requests.get(pr_url, headers)
     
     # Log the response status and JSON content
     logging.info(f"Response Status Code: {response.status_code}")

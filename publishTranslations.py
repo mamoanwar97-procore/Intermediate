@@ -3,12 +3,8 @@
 
 import os
 import sys
-import json
 import requests
-import base64
-import re
-import time
-import datetime
+
 
 # Get the PR number
 pr_number = os.getenv('PR_NUMBER')
@@ -16,7 +12,7 @@ if pr_number == None:
     print("PR_NUMBER not found")
     sys.exit(1)
 
-# Get the repo name
+# Get the repo name it will the same repo where the PR is raised
 repo_name = os.getenv('REPO_NAME')
 if repo_name == None:
     print("REPO_NAME not found")

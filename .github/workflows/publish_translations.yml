@@ -43,6 +43,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
           PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          REPO_NAME: ${{ github.repository }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: python publishTranslations.py
 
       - name: Open PR

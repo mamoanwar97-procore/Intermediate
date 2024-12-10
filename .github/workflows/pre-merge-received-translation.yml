@@ -65,22 +65,23 @@ jobs:
 
           echo "Sending update payload: $UPDATE_PAYLOAD"
 
-          # Send the update request to Supabase
-          RESPONSE=$(curl -s -X PATCH \
+          # Send the update request to Supabase and capture HTTP status code
+          RESPONSE=$(curl -s -o response_body.txt -w "%{http_code}" -X PATCH \
             "$SUPABASE_URL/rest/v1/translation_processes?commit_hash=eq.$COMMIT_HASH" \
             -H "Content-Type: application/json" \
             -H "apiKey: $SUPABASE_SERVICE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
             --data "$UPDATE_PAYLOAD")
 
-          echo "API response: $RESPONSE"
+          echo "API response code: $RESPONSE"
+          echo "Response body:"
+          cat response_body.txt
 
-          # Check for errors in the response
-          if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
-            ERROR_MESSAGE=$(echo "$RESPONSE" | jq -r '.message // "No message provided"')
-            ERROR_DETAILS=$(echo "$RESPONSE" | jq -r '.details // "No additional details provided"')
-            echo "::error::Failed to update records. Message: $ERROR_MESSAGE, Details: $ERROR_DETAILS"
-            exit 1
-          else
+          # Check if the response code is in the 200-299 range
+          if [[ "$RESPONSE" =~ ^2[0-9]{2}$ ]]; then
             echo "::notice::Records updated successfully."
+          else
+            ERROR_MESSAGE=$(cat response_body.txt | jq -r '.message // "No message provided"')
+            echo "::error::Failed to update records. HTTP Code: $RESPONSE, Message: $ERROR_MESSAGE"
+            exit 1
           fi

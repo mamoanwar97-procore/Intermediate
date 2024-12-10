@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.INTERMEDIATE_TOKEN }}
 
       - name: Create collection branch if not exists
         run: |

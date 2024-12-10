@@ -1,12 +1,13 @@
 name: Post Merge Process
 
 on:
-  push:
-    branches:
-      - mixin
+  pull_request:
+    types:
+      - closed
 
 jobs:
   process-pr-info:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -33,9 +34,9 @@ jobs:
             exit 1
           fi
 
-          # Extract aggregator PR details
-          PR_NAME=$(yq eval '.aggregator.pr_name' pr_info.yml)
-          PR_NUMBER=$(yq eval '.aggregator.pr_number' pr_info.yml)
+          # Extract current pull request details
+          PR_NAME=$(jq -r '.pull_request.title' $GITHUB_EVENT_PATH)
+          PR_NUMBER=$(jq -r '.pull_request.number' $GITHUB_EVENT_PATH)
 
           # Extract sources into JSON
           # Convert sources to JSON array
@@ -108,12 +109,12 @@ jobs:
           fi
 
       # Step 5: Reset the `pr_info.yml` file
-      - name: Reset pr_info.yml
-        run: |
-          > pr_info.yml
-          if [ ! -s pr_info.yml ]; then
-              echo "::notice::pr_info.yml successfully reset."
-          else
-              echo "::error::Failed to reset pr_info.yml."
-              exit 1
-          fi
+        - name: Reset pr_info.yml
+          run: |
+            echo "" > pr_info.yml
+            if [ ! -s pr_info.yml ]; then
+            echo "::notice::pr_info.yml successfully reset."
+            else
+            echo "::error::Failed to reset pr_info.yml."
+            exit 1
+            fi

@@ -16,43 +16,37 @@ jobs:
         run: |
           # Get PR title
           PR_TITLE="${{ github.event.pull_request.title }}"
-          
           # Extract the commit hash from the title (assuming it's after "commit" and separated by a space)
           COMMIT_HASH=$(echo "$PR_TITLE" | grep -oP '(?<=commit\s)[a-f0-9]{40}')
-          
-          if [ -z "$COMMIT_HASH" ]; then
-            echo "::notice::No commit hash found in PR title."
-            exit 0
-          fi
-
-          echo "Commit hash extracted: $COMMIT_HASH"
           echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          if [ -z "$COMMIT_HASH" ]; then
+            echo "hash_commit_exists=false" >> $GITHUB_ENV
+          else
+            echo "hash_commit_exists=true" >> $GITHUB_ENV
+          fi
 
       # Step 2: Checkout the repository
       - name: Checkout code
+        if: env.hash_commit_exists == 'true'
         uses: actions/checkout@v3
 
       # Step 3: Install jq
       - name: Install jq
+        if: env.hash_commit_exists == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-          jq --version
 
       # Step 4: Update database records with commit hash, status, and received_at timestamp
       - name: Update Records in Supabase
+        if: env.hash_commit_exists == 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          COMMIT_HASH: ${{ env.COMMIT_HASH }}
         run: |
-          # Construct the current timestamp (ISO 8601 format)
           RECEIVED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          echo "Current timestamp: $RECEIVED_AT"
-
-          # Prepare the update payload
-          COMMIT_HASH="${{ env.COMMIT_HASH }}"
           NEW_STATUS="RECEIVED"
-
           UPDATE_PAYLOAD=$(jq -n \
             --arg commit_hash "$COMMIT_HASH" \
             --arg new_status "$NEW_STATUS" \

@@ -1,6 +1,16 @@
+const fs = require("fs");
+const xml2js = require("xml2js");
 export default function printStuff() {
   const { FIRST_NAME, LAST_NAME } = process.env;
 
-  console.log(`Hello ${FIRST_NAME} ${LAST_NAME}`);
-  console.log("stuff");
+  // read xml file
+  const parser = new xml2js.Parser();
+  fs.readFile(__dirname + "/reference.xml", function (err, data) {
+    parser.parseString(data, function (err, result) {
+      console.dir(result);
+      console.log("Done");
+    });
+  });
+
+  console.log(`Hello, ${FIRST_NAME} ${LAST_NAME}!`);
 }

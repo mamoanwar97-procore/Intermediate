@@ -13,3 +13,7 @@
   - repo_name: "MFE2"
     pr_name: "Open PR"
     pr_number: 4
+
+  - repo_name: "MFE2"
+    pr_name: "Double"
+    pr_number: 5

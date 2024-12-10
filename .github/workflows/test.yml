@@ -13,6 +13,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+
+      - name: Install npm dependencies
+        run: npm install
+
       - name: Create collection branch if not exists
         run: |
           if git show-ref --verify --quiet refs/heads/translations-collection; then

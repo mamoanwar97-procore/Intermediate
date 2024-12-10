@@ -30,14 +30,14 @@ jobs:
       - name: Run Python script
         env:
           GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
-          BRANCH: translations-collection-${{ github.run_number }}
+          BRANCH: mfe-translations-collection
         run: python python.py
 
       - name: Open PR
         uses: rematocorp/open-pull-request-action@v1
         with:
           github-token: ${{ secrets.INTERMEDIATE_TOKEN }}
-          from-branch: translations-collection-${{ github.run_number }}
+          from-branch: mfe-translations-collection
           to-branch: MFE_en
           repository-owner: mamoanwar97-procore
           repository: Intermediate

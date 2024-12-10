@@ -6,3 +6,6 @@
   - repo_name: "MFE3"
     pr_name: "Collect Now"
     pr_number: 27
+  - repo_name: "MFE1"
+    pr_name: "Collections 11"
+    pr_number: 11

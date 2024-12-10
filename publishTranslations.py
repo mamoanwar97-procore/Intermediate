@@ -14,11 +14,6 @@ parent_dir = os.getcwd()
 with open(f'{parent_dir}/reference.xml') as fd:
     doc = xmltodict.parse(fd.read())
 
-# def test():
-#     print(doc['manifest']['project'])
-#     project_xml_data = next((project for project in doc['manifest']['project'] if project['@name'] == 'MFE1' ), None)
-#     print(project_xml_data)
-
 # Get the PR number
 pr_number = os.getenv('PR_NUMBER')
 if pr_number is None:
@@ -49,15 +44,6 @@ if isinstance(github_token, bytes):
 
 # Ensure the token is stripped of any extra whitespace
 github_token = github_token.strip()
-
-# Parse the XML file
-
-
-# for project in doc['manifest']['project']:
-#     repo = project['@name']
-#     revision = project.get('@revision', 'main') # This is optional, default to 'main'
-#     branch = project.get('@branch')
-
 
 # Function to get the folders in a pull request
 def get_folders_in_pr(pr_number, repo_name, github_token):
@@ -123,7 +109,7 @@ def extract_json_from_patch(patch):
     json_lines = []
     for line in patch.splitlines():
         if line.startswith('+') and not line.startswith('+++'):  # Only get added lines, ignore the diff header lines
-            json_lines.append(line[1:])  # Remove the '+' from the start of each added line
+            json_lines.append(line[1:]+'\n')  # Remove the '+' from the start of each added line
 
     # Combine all added lines into a single string and return it as JSON content
     json_content = ''.join(json_lines)
@@ -143,9 +129,9 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         # Generate a new branch in the target repo (e.g., 'feature/pr-26')
         new_branch_name = f"feature/pr-{pr_number}"
         # TODO: make this dynamic
+        revision = project_xml_data.get('@revision', 'main')
         logging.info('final el final',project_xml_data)
-        # project_xml_data['@revision'] or main
-        base_branch = target_repo.get_branch(project_xml_data.get('@revision', 'main')  )  # assuming 'main' is the base branch
+        base_branch = target_repo.get_branch(revision)
         target_repo.create_git_ref(ref=f"refs/heads/{new_branch_name}", sha=base_branch.commit.sha)
 
         
@@ -168,7 +154,7 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
             title=pr_title,
             body=pr_body,
             head=new_branch_name,
-            base="main"  # assuming 'main' is the base branch
+            base=revision
         )
 
         logging.info(f"Successfully created PR in {targetRepoName}")

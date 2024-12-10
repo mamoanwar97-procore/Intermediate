@@ -1,6 +1,6 @@
-const fs = require("fs");
-const { execSync } = require("child_process");
-const xml2js = require("xml2js");
+import fs from "fs";
+import { execSync } from "child_process";
+import { parseString } from "xml2js";
 
 // Get the current working directory (repository root)
 const parentDir = process.cwd();
@@ -9,7 +9,7 @@ const parentDir = process.cwd();
 const xmlData = fs.readFileSync(`${parentDir}/reference.xml`, "utf8");
 
 // Parse the XML data
-xml2js.parseString(xmlData, (err, result) => {
+parseString(xmlData, (err, result) => {
   if (err) {
     console.error("Error parsing XML:", err);
     process.exit(1);

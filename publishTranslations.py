@@ -34,7 +34,7 @@ if github_token is None:
 # print all the folders in the PR
 def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
     # Use the correct GitHub API endpoint for PR details
-    pr_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/pulls/{pr_number}"
+    pr_url = f"https://api.github.com/repos/{repo_name}/pulls/{pr_number}"
     logging.info(f"PR URL: {pr_url}")
 
     headers = {

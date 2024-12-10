@@ -6,12 +6,25 @@ main_branch = 'main'
 username='mamoanwar97-procore'
 repo='Intermediate'
 parent_dir = os.getcwd()
-default_collection_branch = 'translations-collection'
-
-# Parse the XML file
 with open(f'{parent_dir}/reference.xml') as fd:
     doc = xmltodict.parse(fd.read())
 
-#git clone the current repo
-subprocess.run(['git', 'clone', '-b', main_branch, f'git@github.com:{username}/{repo}', f'{parent_dir}/{repo}'])
-subprocess.run(['cd', f'{repo}'])
+def run():
+    default_collection_branch = os.environ.get('BRANCH')
+    main_dir = os.environ.get('PWD')
+    subprocess.run(['git', 'fetch'], cwd=f'{main_dir}')
+    subprocess.run(['git', 'checkout', 'MFE_en'], cwd=f'{main_dir}')
+    subprocess.run(['git', 'checkout', '-b', default_collection_branch], cwd=f'{main_dir}')
+    subprocess.run(['git', 'config', 'pull.rebase', 'false'], cwd=f'{main_dir}')
+    
+    # Loop over the project elements in the XML file
+    for project in doc['manifest']['project']:
+        branch = project.get('@branch')
+    
+        # create new branch to collect all translations updates from all repos
+        subprocess.run(['git', 'pull', 'origin', branch], cwd=f'{main_dir}')
+    
+    subprocess.run(['git', 'push', 'origin', default_collection_branch] , cwd=f'{main_dir}')
+
+if __name__ == "__main__":
+    run()

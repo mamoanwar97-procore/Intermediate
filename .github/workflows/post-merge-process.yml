@@ -14,20 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Get merge commit details
-      - name: Get merge commit details
-        id: merge_commit
-        run: |
-          # Get the latest commit details
-          COMMIT_HASH=$(git rev-parse HEAD)
-
-          # Print for debugging
-          echo "Commit Hash: $COMMIT_HASH"
-
-          # Set GitHub Action environment variables
-          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
-
-      # Step 3: Install `yq` and `jq`
+      # Step 2: Install `yq` and `jq`
       - name: Install yq and jq
         run: |
           sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -37,7 +24,7 @@ jobs:
           sudo apt-get install -y jq
           jq --version
 
-      # Step 4: Read and parse `pr_info.yml` data
+      # Step 3: Read and parse `pr_info.yml` data
       - name: Parse PR info
         id: parse_pr_info
         run: |
@@ -59,7 +46,7 @@ jobs:
           echo "PR_NAME=$PR_NAME" >> $GITHUB_ENV
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
 
-      # Step 5: Insert into `translation_processes`
+      # Step 4: Insert into `translation_processes`
       - name: Insert into translation_processes (Bulk Insert)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -81,21 +68,20 @@ jobs:
           echo "Contents of sources.json:"
           cat sources.json
 
+          # Get the commit hash of the merge commit
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+
           # Prepare bulk data as a JSON array
-          BULK_DATA=$(jq -c --arg pr_name "$PR_NAME" \
-            --arg pr_number "$PR_NUMBER" \
-            --arg commit_hash "$COMMIT_HASH" \
-            '[.[] | { 
+          BULK_DATA=$(jq -c --arg pr_name "$PR_NAME" --arg pr_number "$PR_NUMBER" --arg commit_hash "$COMMIT_HASH" '
+            [ .[] | { 
                 pr_name: $pr_name, 
                 pr_number: ($pr_number | tonumber), 
-                commit_hash: $commit_hash, 
                 source_repo_name: .repo_name, 
                 source_pr_name: .pr_name, 
-                source_pr_number: .pr_number 
+                source_pr_number: .pr_number,
+                commit_hash: $commit_hash
             } ]' < sources.json)
-
-          echo "Validating BULK_DATA JSON:"
-          echo "$BULK_DATA" | jq .
 
           echo "Sending bulk data: $BULK_DATA"
 
@@ -111,15 +97,13 @@ jobs:
 
           # Check for errors in the response
           if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
-            ERROR_DETAILS=$(echo "$RESPONSE" | jq -r '.details // "No additional details provided"')
-            ERROR_HINT=$(echo "$RESPONSE" | jq -r '.hint // "No hints provided"')
-            echo "::error::Failed to insert bulk data. Message: $(echo "$RESPONSE" | jq -r '.message'), Details: $ERROR_DETAILS, Hint: $ERROR_HINT"
+            echo "::error::Failed to insert bulk data: $RESPONSE"
             exit 1
           else
             echo "::notice::Bulk data inserted successfully."
           fi
 
-      # Step 6: Reset the `pr_info.yml` file
+      # Step 5: Reset the `pr_info.yml` file
       - name: Reset pr_info.yml
         run: |
           > pr_info.yml

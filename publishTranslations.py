@@ -85,7 +85,7 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     # this is the folders example ['MFE1/translations', 'MFE1/translations/lvl2/v1', 'MFE2/translations/src/locales', 'MFE3/translations/src/dummy/es']
     # group by the first slice of the folder like MFE1 or MFE2
     targetRepoNames = [folder.split('/')[0] for folder in folders]
-    targetRepoNames = list(set(folders))
+    targetRepoNames = list(set(targetRepoNames))
     print(f"targetRepoNames {targetRepoNames}")
     
     # TODO: split this in a seperate function 

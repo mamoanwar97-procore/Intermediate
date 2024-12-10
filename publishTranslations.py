@@ -94,11 +94,28 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
         # create a PR in the target repo
         current_pr_files = [pr_file for pr_file in pr_files if pr_file['filename'].startswith(targetRepoName)]
         print(f"Creating PR in {targetRepoName}, with files {current_pr_files}")
-
+        # create a PR in the target repo
+        create_pr_in_target_repo(targetRepoName, current_pr_files, github_token)
 
     return targetRepoNames
 
 
+def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
+    # create a new branch in the target repo
+    url = f"https://api.github.com/repos/{repo_owner}/{targetRepoName}/git/refs"
+    headers = {
+        "Authorization": f"Bearer {github_token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    headers = {k: str(v) for k, v in headers.items()}
+    data = {
+        "ref": "refs/heads/translations",
+        "sha": "master"
+    }
+    response = requests.post(url, headers=headers, json=data)
+    print('final',response.json())
+
+    # create a new PR in the target repo
 
 
 

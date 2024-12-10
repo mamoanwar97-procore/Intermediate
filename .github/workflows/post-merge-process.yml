@@ -130,5 +130,4 @@ jobs:
           git config --global user.email "rowan.ibrahim@procore.com"
           git add pr_info.yml
           git commit -m "Reset pr_info.yml after processing"
-          git pull --rebase origin ${{ github.event.pull_request.head.ref }}
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:${{ github.event.pull_request.base.ref }}

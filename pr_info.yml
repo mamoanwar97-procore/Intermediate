@@ -9,3 +9,7 @@
   - repo_name: "MFE1"
     pr_name: "Collections 11"
     pr_number: 11
+
+  - repo_name: "MFE2"
+    pr_name: "Open PR"
+    pr_number: 4

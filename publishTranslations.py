@@ -114,6 +114,7 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         # Add files to the new branch
         for pr_file in pr_files:
             pr_file['filename'] = pr_file['filename'].replace("/translations/", "/")
+            logging.info('yalahwy',pr_file['patch'])
             target_repo.create_file(
                 pr_file['filename'],
                 f"Add changes from PR {pr_number}",

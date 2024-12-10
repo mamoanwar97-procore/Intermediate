@@ -9,7 +9,9 @@ default_collection_branch = 'translations-collection'
 with open(f'{parent_dir}/reference.xml') as fd:
     doc = xmltodict.parse(fd.read())
 
+subprocess.run(['git', 'fetch', '--all'])
 subprocess.run(['git', 'checkout', "origin", default_collection_branch])
+subprocess.run(['git', 'config', 'pull.rebase', 'false'])
 # Loop over the project elements in the XML file
 for project in doc['manifest']['project']:
     repo = project['@name']
@@ -20,4 +22,4 @@ for project in doc['manifest']['project']:
     subprocess.run(['git', 'pull', 'origin', branch])
     
 subprocess.run(['git', 'push', 'origin', default_collection_branch])
-subprocess.run(['gh', 'pr', 'create', '--base', 'main', '--head', default_collection_branch, '--title', 'Translations Update', '--body', 'Translations Update'])
+# subprocess.run(['gh', 'pr', 'create', '--base', 'main', '--head', default_collection_branch, '--title', 'Translations Update', '--body', 'Translations Update'])

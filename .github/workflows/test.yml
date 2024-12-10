@@ -11,14 +11,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Create collection branch if not exists
         run: |
           if git show-ref --verify --quiet refs/heads/translations-collection; then
-            git checkout translations-collection
+            echo "Branch exists"
           else
             git checkout -b translations-collection
+            git push origin translations-collection
+            git checkout main
           fi
 
       - name: Set up Python

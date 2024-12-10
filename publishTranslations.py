@@ -36,7 +36,7 @@ if isinstance(github_token, bytes):
 
 
 # print all the folders in the PR
-def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
+def get_folders_in_pr(pr_number, repo_name, github_token):
     # Use the correct GitHub API endpoint for PR details
     pr_url = f"https://api.github.com/repos/{repo_name}/pulls/{pr_number}"
     logging.info(f"PR URL: {pr_url}")
@@ -84,7 +84,7 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
 
 def run():
     logging.info(f"PR_NUMBER: {pr_number}")
-    folders = get_folders_in_pr(pr_number, repo_name, repo_owner, github_token)
+    folders = get_folders_in_pr(pr_number, repo_name, github_token)
     logging.info(f"Folders in PR: {folders}")
 
 if __name__ == "__main__":

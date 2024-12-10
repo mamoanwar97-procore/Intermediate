@@ -86,16 +86,14 @@ def get_folders_in_pr(pr_number, repo_name, github_token):
     # group by the first slice of the folder like MFE1 or MFE2
     targetRepoNames = [folder.split('/')[0] for folder in folders]
     targetRepoNames = list(set(targetRepoNames))
-    print(f"targetRepoNames {targetRepoNames}")
     
     # TODO: split this in a seperate function 
 
     # create a pr in the target repo names with the changes under it 
-    # for targetRepoName in targetRepoNames:
+    for targetRepoName in targetRepoNames:
         # create a PR in the target repo
-        # print(f"Creating PR in {targetRepoName}")
-        # pr_files = [pr_file for pr_file in pr_files if pr_file['filename'].startswith(targetRepoName)]
-        # logging.info(pr_files)
+        pr_files = [pr_file for pr_file in pr_files if pr_file['filename'].startswith(targetRepoName)]
+        print(f"Creating PR in {targetRepoName}, with files {pr_files}")
 
 
     return targetRepoNames

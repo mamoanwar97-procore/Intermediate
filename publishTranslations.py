@@ -36,9 +36,9 @@ if isinstance(github_token, bytes):
 
 
 # print all the folders in the PR
-def get_folders_in_pr(pr_number:26, repo_name, github_token):
+def get_folders_in_pr(pr_number, repo_name, github_token):
     # Use the correct GitHub API endpoint for PR details
-    pr_url = f"https://api.github.com/repos/{repo_name}/pulls/{pr_number}"
+    pr_url = f"https://api.github.com/repos/{repo_name}/pulls/{pr_number}/files"
     logging.info(f"PR URL: {pr_url}")
 
     headers = {
@@ -67,7 +67,7 @@ def get_folders_in_pr(pr_number:26, repo_name, github_token):
         sys.exit(1)
 
     # Check if the 'files' key exists in the response
-    pr_files = response_data.get('files', [])
+    pr_files = response_data
     
     # If there are no files, log and return an empty list
     if not pr_files:

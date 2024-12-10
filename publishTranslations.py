@@ -3,7 +3,8 @@ import sys
 import requests
 import logging
 from github import Github
-import re
+import xmltodict
+import subprocess
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -38,6 +39,17 @@ if isinstance(github_token, bytes):
 
 # Ensure the token is stripped of any extra whitespace
 github_token = github_token.strip()
+
+# Parse the XML file
+parent_dir = os.getcwd()
+with open(f'{parent_dir}/reference.xml') as fd:
+    doc = xmltodict.parse(fd.read())
+
+# for project in doc['manifest']['project']:
+#     repo = project['@name']
+#     revision = project.get('@revision', 'main') # This is optional, default to 'main'
+#     branch = project.get('@branch')
+
 
 # Function to get the folders in a pull request
 def get_folders_in_pr(pr_number, repo_name, github_token):
@@ -118,11 +130,15 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         # Get the target repository
         target_repo = g.get_repo(f"{repo_owner}/{targetRepoName}")
 
+        project_xml_data = next((project for project in doc['manifest']['project'] if project['@name'] == targetRepoName ), None)
+
         # Generate a new branch in the target repo (e.g., 'feature/pr-26')
         new_branch_name = f"feature/pr-{pr_number}"
-        base_branch = target_repo.get_branch("main")  # assuming 'main' is the base branch
+        # TODO: make this dynamic
+        base_branch = target_repo.get_branch(project_xml_data['@revision'])  # assuming 'main' is the base branch
         target_repo.create_git_ref(ref=f"refs/heads/{new_branch_name}", sha=base_branch.commit.sha)
 
+        
         # Add files to the new branch
         for pr_file in pr_files:
             pr_file['filename'] = pr_file['filename'].replace("/translations/", "/")

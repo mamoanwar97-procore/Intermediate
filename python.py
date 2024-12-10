@@ -1,3 +1,7 @@
+import os
+import xmltodict
+import subprocess
+
 def run():
     parent_dir = os.environ.get('PWD')
     default_collection_branch = os.environ.get('BRANCH')

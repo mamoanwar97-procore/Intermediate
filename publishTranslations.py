@@ -5,6 +5,7 @@ import logging
 from github import Github
 import xmltodict
 import subprocess
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -127,7 +128,8 @@ def create_pr_in_target_repo(targetRepoName, pr_files, github_token):
         project_xml_data = next((project for project in doc['manifest']['project'] if project['@name'] == targetRepoName ), None)
 
         # Generate a new branch in the target repo (e.g., 'feature/pr-26')
-        new_branch_name = f"feature/pr-{pr_number}"
+        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        new_branch_name = f"feature/pr-{pr_number}-{current_time}"
         # TODO: make this dynamic
         revision = project_xml_data.get('@revision', 'main')
         logging.info('final el final',project_xml_data)

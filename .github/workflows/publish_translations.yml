@@ -1,4 +1,4 @@
-# This workflow will be triggered manually 
+# This workflow will be triggered manually
 # and will run on the latest PR that is created by branch name that starts with `smart-ling`
 # and will create a PR on the MFE repo with the changes.
 
@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR Number'
+        description: "PR Number"
         required: true
-        default: '0'
+        default: "0"
 
 jobs:
   run-python-script:
@@ -39,6 +39,7 @@ jobs:
           pip install requests
           pip install PyGithub
           pip install gitpython
+          pip install datetime
 
       - name: Run Python script
         env:
@@ -56,4 +57,3 @@ jobs:
       #     to-branch: MFE_en
       #     repository-owner: mamoanwar97-procore
       #     repository: Intermediate
-

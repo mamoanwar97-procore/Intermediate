@@ -17,3 +17,7 @@
   - repo_name: "MFE2"
     pr_name: "Double"
     pr_number: 5
+
+  - repo_name: "MFE2"
+    pr_name: "Update en.json"
+    pr_number: 6

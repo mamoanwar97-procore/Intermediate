@@ -1,5 +1,5 @@
 import re
-from messages.translation_delivery import translation_delivery_message
+from slack_utils.messages.translation_delivery import translation_delivery_message
 from post_message_to_slack import post_message_to_slack
 
 

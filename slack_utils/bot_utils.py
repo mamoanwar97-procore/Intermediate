@@ -1,6 +1,6 @@
 import re
 from slack_utils.messages.translation_delivery import translation_delivery_message
-from post_message_to_slack import post_message_to_slack
+from slack_utils.post_message_to_slack import post_message_to_slack
 
 
 def build_channel_id_prs_dict(channel_id: str, prs: list[str]) -> dict[str, list[str]]:

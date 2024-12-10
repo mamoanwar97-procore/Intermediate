@@ -4,6 +4,8 @@ import subprocess
 
 parent_dir = os.getcwd()
 default_collection_branch = 'translations-collection'
+env = os.environ.copy()
+print(env)
 
 # Parse the XML file
 with open(f'{parent_dir}/reference.xml') as fd:

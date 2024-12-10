@@ -47,12 +47,12 @@ jobs:
           REPO_OWNER: ${{ github.repository_owner }}
         run: python publishTranslations.py
 
-      - name: Open PR
-        uses: rematocorp/open-pull-request-action@v1
-        with:
-          github-token: ${{ secrets.INTERMEDIATE_TOKEN }}
-          from-branch: translations-collection-${{ github.run_number }}
-          to-branch: MFE_en
-          repository-owner: mamoanwar97-procore
-          repository: Intermediate
+      # - name: Open PR
+      #   uses: rematocorp/open-pull-request-action@v1
+      #   with:
+      #     github-token: ${{ secrets.INTERMEDIATE_TOKEN }}
+      #     from-branch: translations-collection-${{ github.run_number }}
+      #     to-branch: MFE_en
+      #     repository-owner: mamoanwar97-procore
+      #     repository: Intermediate
 

@@ -29,35 +29,34 @@ parseString(xmlData, (err, result) => {
 
     try {
       // Clone the repo with the specified branch
-      // execSync(
-      //   `git clone --branch ${branch} https://github.com/mamoanwar97-procore/${repoName}.git`,
-      //   { stdio: "inherit" }
-      // );
+      execSync(
+        `git clone --branch ${branch} https://github.com/mamoanwar97-procore/${repoName}.git`,
+        { stdio: "inherit" }
+      );
       const repoDir = `${parentDir}/${repoName}`;
 
       // Navigate into the cloned repo
       const fileToCopy = `${repoDir}/${filePath}`;
-      const destDir = `${parentDir}/${fileToCopy}`; // Destination folder to store files
-      console.log("destDir", destDir);
+      const destDir = `${parentDir}/collected-files`; // Destination folder to store files
 
       // Ensure the destination directory exists
-      // if (!fs.existsSync(destDir)) {
-      //   fs.mkdirSync(destDir);
-      // }
+      if (!fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir);
+      }
 
       // Copy the specified file to the action repository
-      // if (fs.existsSync(fileToCopy)) {
-      //   const fileName = filePath.split("/").pop(); // Extract the file name
-      //   fs.copyFileSync(fileToCopy, `${destDir}/${fileName}`);
-      //   console.log(`Copied ${fileToCopy} to ${destDir}/${fileName}`);
-      // } else {
-      //   console.error(
-      //     `File ${fileToCopy} does not exist in repository ${repoName}`
-      //   );
-      // }
+      if (fs.existsSync(fileToCopy)) {
+        const fileName = filePath.split("/").pop(); // Extract the file name
+        fs.copyFileSync(fileToCopy, `${destDir}/${fileName}`);
+        console.log(`Copied ${fileToCopy} to ${destDir}/${fileName}`);
+      } else {
+        console.error(
+          `File ${fileToCopy} does not exist in repository ${repoName}`
+        );
+      }
 
       // Clean up the cloned repo
-      // fs.rmdirSync(repoDir, { recursive: true });
+      fs.rmdirSync(repoDir, { recursive: true });
     } catch (error) {
       console.error(`Error processing repository ${repoName}:`, error);
     }

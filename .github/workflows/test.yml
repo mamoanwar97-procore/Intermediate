@@ -15,10 +15,10 @@ jobs:
         with:
           token: ${{ secrets.INTERMEDIATE_TOKEN }}
 
-      - name: Create collection branch if not exists
-        run: |
-          git checkout -b translations-collection-${{ github.run_number }}
-          git push origin translations-collection-${{ github.run_number }}
+      # - name: Create collection branch if not exists
+      #   run: |
+      #     git checkout -b translations-collection-${{ github.run_number }}
+      #     git push origin translations-collection-${{ github.run_number }}
 
       - name: Set up Python
         uses: actions/setup-python@v5

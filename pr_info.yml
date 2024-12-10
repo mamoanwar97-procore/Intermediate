@@ -29,3 +29,7 @@
   - repo_name: "MFE3"
     pr_name: "CCC"
     pr_number: 28
+
+  - repo_name: "MFE1"
+    pr_name: "Going well?"
+    pr_number: 12

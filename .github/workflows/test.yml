@@ -17,17 +17,9 @@ jobs:
 
       - name: Create collection branch if not exists
         run: |
-          if git show-ref --verify --quiet refs/heads/translations-collection; then
-            echo "Branch exists"
-            git branch -D translations-collection
-            git checkout -b translations-collection
-            git push origin translations-collection
-            git checkout main
-          else
-            git checkout -b translations-collection
-            git push origin translations-collection
-            git checkout main
-          fi
+          git checkout -b translations-collection-${{ github.run_number }}
+          git push origin translations-collection-${{ github.run_number }}
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -38,3 +30,7 @@ jobs:
 
       - name: Run Python script
         run: python python.py
+        with:
+          env:
+            GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
+            BRANCH: translations-collection-${{ github.run_number }}

@@ -40,10 +40,11 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
         "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github.v3+json"
     }
-    logging.info(f" headers: {headers}")
 
-    response = requests.get(pr_url)
+    response = requests.get(pr_url,headers)
     
+    logging.info(f" response: {response}")
+
     if response.status_code != 200:
         logging.info(f"Failed to get PR details: {response.status_code}")
         sys.exit(1)

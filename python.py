@@ -4,6 +4,7 @@ import subprocess
 
 main_branch = 'main'
 username='mamoanwar97-procore'
+repo='Intermediate'
 parent_dir = os.getcwd()
 default_collection_branch = 'translations-collection'
 

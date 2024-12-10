@@ -16,6 +16,11 @@ jobs:
           token: ${{ secrets.INTERMEDIATE_TOKEN }}
           fetch-depth: 0
 
+      - name: Set up Git
+        run: |
+          git config --global user.name "mamoanwar97-procore"
+          git config --global user.email "mahmoud.m.anwar@procore.com"
+
       # - name: Create collection branch if not exists
       #   run: |
       #     git checkout -b translations-collection-${{ github.run_number }}

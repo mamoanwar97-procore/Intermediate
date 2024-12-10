@@ -2,3 +2,6 @@ sources:
   - repo_name: "MFE2"
     pr_name: "Update en.json"
     pr_number: 11
+  - repo_name: "MFE1"
+    pr_name: "translations: add key"
+    pr_number: 20

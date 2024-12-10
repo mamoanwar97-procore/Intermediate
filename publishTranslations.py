@@ -4,30 +4,34 @@
 import os
 import sys
 import requests
+import logging
 
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 # Get the PR number
 pr_number = os.getenv('PR_NUMBER')
 if pr_number == None:
-    print("PR_NUMBER not found")
+    logging.info("PR_NUMBER not found")
     sys.exit(1)
 
 # Get the repo name it will the same repo where the PR is raised
 repo_name = os.getenv('REPO_NAME')
 if repo_name == None:
-    print("REPO_NAME not found")
+    logging.info("REPO_NAME not found")
     sys.exit(1)
 
 # Get the repo owner
 repo_owner = os.getenv('REPO_OWNER')
 if repo_owner == None:
-    print("REPO_OWNER not found")
+    logging.info("REPO_OWNER not found")
     sys.exit(1)
 
 # Get the GITHUB_TOKEN
 github_token = os.getenv('GITHUB_TOKEN')
 if github_token == None:
-    print("GITHUB_TOKEN not found")
+    logging.info("GITHUB_TOKEN not found")
     sys.exit(1)
 
 # print all the folders in the PR
@@ -40,7 +44,7 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
     }
     response = requests.get(pr_url, headers=headers)
     if response.status_code != 200:
-        print(f"Failed to get PR details: {response.status_code}")
+        logging.info(f"Failed to get PR details: {response.status_code}")
         sys.exit(1)
     pr_data = response.json()
     pr_files = pr_data['files']
@@ -55,5 +59,5 @@ def get_folders_in_pr(pr_number, repo_name, repo_owner, github_token):
 
 def main():
     folders = get_folders_in_pr(pr_number, repo_name, repo_owner, github_token)
-    print(folders)
+    logging.info(folders)
 

@@ -9,6 +9,8 @@ jobs:
   process-pr-info:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       # Step 1: Checkout the repository
@@ -122,8 +124,8 @@ jobs:
       # Step 6: Commit the reset `pr_info.yml` file
       - name: Commit changes
         run: |
-          git config --global user.name "mamoanwar97-procore"
-          git config --global user.email "mahmoud.m.anwar@procore.com"
+          git config --global user.name "rowan-procore"
+          git config --global user.email "rowan.ibrahim@procore.com"
           git add pr_info.yml
           git commit -m "Reset pr_info.yml after processing"
           git push origin main

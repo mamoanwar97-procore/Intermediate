@@ -37,6 +37,7 @@ parseString(xmlData, (err, result) => {
 
       // Navigate into the cloned repo
       const fileToCopy = `${repoDir}/${filePath}`;
+      console.log("fileToCopy", fileToCopy);
       const destDir = `${parentDir}/${fileToCopy}`; // Destination folder to store files
 
       // Ensure the destination directory exists

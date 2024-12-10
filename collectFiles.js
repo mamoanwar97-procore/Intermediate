@@ -20,7 +20,7 @@ parseString(xmlData, (err, result) => {
 
   projects.forEach((project) => {
     const repoName = project.$.name;
-    const branch = project.$.branch || "main"; // Default to 'main' if no branch is specified
+    const branch = project.$.revision || "main"; // Default to 'main' if no branch is specified
     const filePath = project.$.file || "en.json"; // File path to copy from the repo
 
     console.log(
@@ -37,7 +37,8 @@ parseString(xmlData, (err, result) => {
 
       // Navigate into the cloned repo
       const fileToCopy = `${repoDir}/${filePath}`;
-      const destDir = `${parentDir}/collected-files`; // Destination folder to store files
+      console.log("fileToCopy", fileToCopy);
+      const destDir = `${parentDir}/${fileToCopy}`; // Destination folder to store files
 
       // Ensure the destination directory exists
       if (!fs.existsSync(destDir)) {

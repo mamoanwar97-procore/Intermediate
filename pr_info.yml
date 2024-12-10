@@ -7,3 +7,6 @@
   - repo_name: "MFE3"
     pr_name: "Update home.json"
     pr_number: 25
+  - repo_name: "MFE3"
+    pr_name: "Gameed"
+    pr_number: 26

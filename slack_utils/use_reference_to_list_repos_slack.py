@@ -1,10 +1,9 @@
-import json
 import os
 import xmltodict
-from get_translation_delivery_prs_by_repo_name import (
+from slack_utils.get_translation_delivery_prs_by_repo_name import (
     get_translation_delivery_prs_by_repo_name,
 )
-from bot_utils import extract_slack_id_from_text, build_channel_id_prs_dict
+from slack_utils.bot_utils import extract_slack_id_from_text
 
 parent_dir = os.getcwd()
 

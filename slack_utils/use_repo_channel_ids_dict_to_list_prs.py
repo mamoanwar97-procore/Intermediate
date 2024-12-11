@@ -1,14 +1,13 @@
-from get_translation_delivery_prs_by_repo_name import (
+from slack_utils.get_translation_delivery_prs_by_repo_name import (
     get_translation_delivery_prs_by_repo_name,
 )
-from bot_utils import build_channel_id_prs_dict, extract_slack_id_from_text
-
 
 def use_repo_channel_ids_dict_to_list_prs(
-    channel_repos_arr: dict[str, list[str]], skipped_repos: list[str] = str
-) -> list[dict[str, list[str]]]:
-    slack_prs_arr = []
-
+    channel_repos_arr: dict[str, list[str]], skipped_repos: list[str] = None
+) -> dict[str, list[str]]:
+    if skipped_repos is None:
+        skipped_repos = []
+    slack_prs_dict: dict[str, list[str]] = {}
     for repo, channel_ids in channel_repos_arr.items():
         if repo in skipped_repos:
             continue
@@ -16,8 +15,9 @@ def use_repo_channel_ids_dict_to_list_prs(
         if len(prs) == 0:
             continue
         for channel_id in channel_ids:
-            slack_prs_arr.append(
-                build_channel_id_prs_dict(extract_slack_id_from_text(channel_id), prs)
-            )
-
-    return slack_prs_arr
+            if channel_id in slack_prs_dict:
+                slack_prs_dict[channel_id].extend(prs)
+            else:
+                slack_prs_dict[channel_id] = list(prs)  # Create a new list to avoid sharing references
+    print(slack_prs_dict)
+    return slack_prs_dict

@@ -28,7 +28,6 @@ jobs:
 
       - name: Run Python script
         env:
-          GH_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.INTERMEDIATE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_HOOK_URL: ${{ secrets.SLACK_HOOK_URL }}
         run: python slack_notify.py

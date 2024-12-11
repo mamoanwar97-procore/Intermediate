@@ -1,4 +1,4 @@
-from .utils import is_singular, construct_prs_list, construct_message, thank_you
+from slack_utils.messages.utils import is_singular, construct_prs_list, construct_message, thank_you
 
 list_emoji = ":translate2:"
 translation_delivery = "Translation Delivery"

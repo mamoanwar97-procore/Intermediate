@@ -19,5 +19,4 @@ def use_repo_channel_ids_dict_to_list_prs(
                 slack_prs_dict[channel_id].extend(prs)
             else:
                 slack_prs_dict[channel_id] = list(prs)  # Create a new list to avoid sharing references
-    print(slack_prs_dict)
     return slack_prs_dict
